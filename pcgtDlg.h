@@ -3,8 +3,8 @@
 //
 
 #pragma once
-
-
+#include "CPU6502.h"
+#include "Bus.h"
 // CpcgtDlg 对话框
 class CpcgtDlg : public CDialogEx
 {
@@ -33,4 +33,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton2();
+
+	Bus nbus;
+	CPU6502 ncpu;
+	CEdit m_edit_cpu_info;
+	afx_msg void OnBnClickedButton3();
 };

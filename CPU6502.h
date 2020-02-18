@@ -15,7 +15,7 @@ public:
 	void rst();
 	void irq();
 	void nmi();
-
+	char* cpu_status();
 private:
 	//status
 	void test_zero(const uint16_t& result);
@@ -26,12 +26,10 @@ private:
 
 private:
 	//addressing 
-	void acc();		void imm();
-	void abso();	void zp();
-	void zpx();		void zpy();
-	void absx();	void absy();
-	void imp();		void rel();
-	void indx();	void indy();
+	void acc();		void imp();		void imm();
+	void zp();		void zpx();		void zpy();
+	void abso();	void absx();	void absy();
+	void rel();		void indx();	void indy();
 	void ind();
 	
 
@@ -62,6 +60,9 @@ private:
 	void push16(uint16_t val);
 	uint16_t pull16();
 
+	uint8_t fetch();
+	void  put(uint8_t val);
+
 private:
 	//config
 	uint16_t stack_base_addr_;
@@ -88,9 +89,9 @@ private:
 	uint8_t		cycles_left_on_ins_;	//how many cycles left for the last executed instruction
 
 	//helper values
-	uint16_t	oldpc, ea, reladdr, value, result;
-	uint8_t		opcode, oldstatus;
-	uint8_t		penalty_op, penalty_addr;
+	uint8_t		opcode_;
+	uint16_t	addr_abs_, addr_rel_;
+	uint8_t		penalty_op_, penalty_addr_;
 
 	//devices
 	Bus			*bus_ptr_;
@@ -102,5 +103,6 @@ private:
 	op_ptr		op_table_[256];
 	uint32_t	cycle_table_[256];
 
+	char	cpu_status_buffer_[256];
 
 };

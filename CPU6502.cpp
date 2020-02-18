@@ -2,7 +2,6 @@
 #include "CPU6502.h"
 
 
-
 CPU6502::CPU6502(uint16_t stack_base_addr):
 	stack_base_addr_(stack_base_addr), bus_ptr_(NULL),
 	addr_table_{
@@ -106,23 +105,20 @@ void CPU6502::test_overflow(const uint16_t& old_a, const uint16_t& m, const uint
 		status_ &= ~flag_overflow;
 }
 
-
-
-
 void CPU6502::ticktock()
 {
 	assert(bus_ptr_);
 	if (0 == cycles_left_on_ins_)
 	{
-		uint8_t opcode = bus_ptr_->read(pc_++);
+		opcode_ = bus_ptr_->read(pc_++);
 		status_ |= flag_constant;
-		penalty_op = penalty_addr = 0;
-		(this->*addr_table_[opcode])();
-		(this->*op_table_[opcode])();
-		cycles_left_on_ins_ = cycle_table_[opcode];
+		penalty_op_ = penalty_addr_ = 0;
+		(this->*addr_table_[opcode_])();
+		(this->*op_table_[opcode_])();
+		cycles_left_on_ins_ = cycle_table_[opcode_];
 		total_instructions_++;
 
-		if (penalty_addr && penalty_op)	cycles_left_on_ins_++;
+		if (penalty_addr_ && penalty_op_)	cycles_left_on_ins_++;
 	}
 	cycles_left_on_ins_--;
 	total_cycles_++;
@@ -131,6 +127,7 @@ void CPU6502::rst()
 {
 	assert(bus_ptr_);
 	pc_ = (uint16_t)bus_ptr_->read(0xfffc) | ((uint16_t)bus_ptr_->read(0xfffd) << 8);
+	pc_ = 0x0400;  //debug
 	a_ = x_ = y_ = 0;
 	sp_ = 0xfd;
 	status_ = flag_constant;
@@ -169,331 +166,530 @@ void CPU6502::nmi()
 // addr
 void CPU6502::acc()
 {
-	return;
-}
-void CPU6502::imm()
-{
-	return;
-}
-void CPU6502::abso()
-{
-	return;
-}
-void CPU6502::zp()
-{
-	return;
-}
-void CPU6502::zpx()
-{
-	return;
-}
-void CPU6502::zpy()
-{
-	return;
-}
-void CPU6502::absx()
-{
-	return;
-}
-void CPU6502::absy()
-{
-	return;
 }
 void CPU6502::imp()
 {
-	return;
+}
+void CPU6502::imm()
+{
+	addr_abs_ = pc_++;
+}
+void CPU6502::zp()
+{
+	addr_abs_ = bus_ptr_->read(pc_++);
+	addr_abs_ &= 0x00ff;
+}
+void CPU6502::zpx()
+{
+	addr_abs_ = bus_ptr_->read(pc_++) + x_;
+	addr_abs_ &= 0x00ff;
+}
+void CPU6502::zpy()
+{
+	addr_abs_ = bus_ptr_->read(pc_++) + y_;
+	addr_abs_ &= 0x00ff;
+}
+void CPU6502::abso()
+{
+	addr_abs_ = bus_ptr_->read(pc_++);
+	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+}
+void CPU6502::absx()
+{
+	uint16_t	ori_page;
+	addr_abs_ = bus_ptr_->read(pc_++);
+	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+	ori_page = addr_abs_ & 0xff00;
+	addr_abs_ += (uint16_t)x_;
+	ori_page != (addr_abs_ & 0xff00) ? penalty_addr_ = 1 : penalty_addr_ = 0;
+}
+void CPU6502::absy()
+{
+	uint16_t	ori_page;
+	addr_abs_ = bus_ptr_->read(pc_++);
+	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+	ori_page = addr_abs_ & 0xff00;
+	addr_abs_ += (uint16_t)y_;
+	ori_page != (addr_abs_ & 0xff00) ? penalty_addr_ = 1 : penalty_addr_ = 0;
 }
 void CPU6502::rel()
 {
-	return;
-}
-void CPU6502::indx()
-{
-	return;
-}
-void CPU6502::indy()
-{
-	return;
+	addr_rel_ = (uint16_t)bus_ptr_->read(pc_++);
+	if (addr_rel_ & 0x80) addr_rel_ |= 0xff00;
 }
 void CPU6502::ind()
 {
-	return;
+	uint16_t ptr_lo = bus_ptr_->read(pc_++);
+	uint16_t ptr_hi = bus_ptr_->read(pc_++);
+	uint16_t ptr = ptr_hi << 8 | ptr_lo;
+	
+	if (0x00ff == ptr_lo) //hardware bug
+		addr_abs_ = bus_ptr_->read(ptr & 0xff00) << 8 | bus_ptr_->read(ptr);
+	else
+		addr_abs_ = bus_ptr_->read(ptr + 1) << 8 | bus_ptr_->read(ptr);
 }
-
+void CPU6502::indx()
+{
+	uint16_t zp_loc = bus_ptr_->read(pc_++);
+	uint16_t ptr_lo = bus_ptr_->read((uint16_t)(zp_loc + (uint16_t)x_) & 0x00ff);
+	uint16_t ptr_hi = bus_ptr_->read((uint16_t)(zp_loc + (uint16_t)x_ + 1) & 0x00ff);
+	addr_abs_ = (ptr_hi << 8) | ptr_lo;
+}
+void CPU6502::indy()
+{
+	uint16_t zp_loc = bus_ptr_->read(pc_++);
+	uint16_t ptr_lo = bus_ptr_->read(zp_loc & 0x00ff);
+	uint16_t ptr_hi = bus_ptr_->read((zp_loc + 1) & 0x00ff);
+	addr_abs_ = ((ptr_hi << 8) | ptr_lo) + y_;
+	//cross page test
+	if ((ptr_hi << 8) != (addr_abs_ & 0xff00))
+		penalty_addr_ = 1;
+}
 
 
 ///////////////////////////////////
 //op
 void CPU6502::adc()
 {
-	return;
+	uint16_t v = (uint16_t)fetch();
+	uint16_t result = (uint16_t)a_ + v + ((uint16_t)status_ & flag_carry);
+	test_carry(result);
+	test_zero(result);
+	test_overflow(a_, v, result);
+	test_sign(result);
+	a_ = result & 0x00ff;
+	penalty_op_ = 1;
 }
 void CPU6502::and()
 {
-	return;
+	uint8_t v = fetch();
+	a_ = a_ & v;
+	test_zero((uint16_t)a_);
+	test_sign((uint16_t)a_);
+	penalty_op_ = 1;
 }
 void CPU6502::asl()
 {
-	return;
+	uint16_t v = fetch();
+	v = v << 1;
+	test_carry(v);
+	test_zero(v);
+	test_sign(v);
+	put(v & 0x00ff);
 }
 void CPU6502::bcc()
 {
-	return;
+	if (0 == (status_ & flag_carry))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 
 void CPU6502::bcs()
 {
-	return;
+	if (flag_carry  == (status_ & flag_carry))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 void CPU6502::beq()
 {
-	return;
+	if (flag_zero  == (status_ & flag_zero))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 void CPU6502::bit()
 {
-	return;
+	uint8_t v = fetch();
+	test_zero(a_ & v);
+	status_ &= ~flag_sign;	status_ |= (v & flag_sign);
+	status_ &= ~flag_overflow;	status_ |= (v & (1 << 6));
 }
 void CPU6502::bmi()
 {
-	return;
+	if (flag_sign == (status_ & flag_sign))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 
 void CPU6502::bne()
 {
-	return;
+	if (0 == (status_ & flag_zero))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 void CPU6502::bpl()
 {
-	return;
+	if (0 == (status_ & flag_sign))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 void CPU6502::brk()
 {
-	return;
+	pc_++;
+	push16(pc_);
+	push8(status_ | flag_break);
+	status_ |= flag_interrupt;
+	pc_ = (uint16_t)bus_ptr_->read(0xfffe) | ((uint16_t)bus_ptr_->read(0xffff) << 8);
 }
 void CPU6502::bvc()
 {
-	return;
+	if (0 == (status_ & flag_overflow))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 
 void CPU6502::bvs()
 {
-	return;
+	if (flag_overflow == (status_ & flag_overflow))
+	{
+		cycles_left_on_ins_++;
+		addr_abs_ = pc_ + addr_rel_;
+		if ((addr_abs_ & 0xff00) != (pc_ & 0xff00))
+			cycles_left_on_ins_++;
+		pc_ = addr_abs_;
+	}
 }
 void CPU6502::clc()
 {
-	return;
+	status_ &= ~flag_carry;
 }
 void CPU6502::cld()
 {
-	return;
+	status_ &= ~flag_decimal;
 }
 void CPU6502::cli()
 {
-	return;
+	status_ &= ~flag_interrupt;
 }
 
 void CPU6502::clv()
 {
-	return;
+	status_ &= ~flag_overflow;
 }
 void CPU6502::cmp()
 {
-	return;
+	uint16_t v = fetch();
+	((uint16_t)a_) >= v ? status_ |= flag_carry : status_ &= ~flag_carry;
+	v = (uint16_t)a_ - v;
+	test_zero(v);
+	test_sign(v);
+	penalty_op_ = 1;
 }
 void CPU6502::cpx()
 {
-	return;
+	uint16_t v = fetch();
+	((uint16_t)x_) >= v ? status_ |= flag_carry : status_ &= ~flag_carry;
+	v = (uint16_t)x_ - v;
+	test_zero(v);
+	test_sign(v);
+	penalty_op_ = 1;
 }
 void CPU6502::cpy()
 {
-	return;
+	uint16_t v = fetch();
+	((uint16_t)y_) >= v ? status_ |= flag_carry : status_ &= ~flag_carry;
+	v = (uint16_t)y_ - v;
+	test_zero(v);
+	test_sign(v);
+	penalty_op_ = 1;
 }
 
 void CPU6502::dec()
 {
-	return;
+	uint16_t v = fetch() - 1;
+	put((uint8_t)(v & 0x00ff));
+	test_zero(v);
+	test_sign(v);
 }
 void CPU6502::dex()
 {
-	return;
+	x_--;
+	test_zero(x_);
+	test_sign(x_);
 }
 void CPU6502::dey()
 {
-	return;
+	y_--;
+	test_zero(y_);
+	test_sign(y_);
 }
 void CPU6502::eor()
 {
-	return;
+	uint8_t v = fetch();
+	a_ = a_ ^ v;
+	test_zero(a_);
+	test_sign(a_);
 }
 
 void CPU6502::inc()
 {
-	return;
+	uint16_t v = fetch() + 1;
+	put((uint8_t)(v & 0x00ff));
+	test_zero(v);
+	test_sign(v);
 }
 void CPU6502::inx()
 {
-	return;
+	x_++;
+	test_zero(x_);
+	test_sign(x_);
 }
 void CPU6502::iny()
 {
-	return;
+	y_++;
+	test_zero(y_);
+	test_sign(y_);
 }
 void CPU6502::jmp()
 {
-	return;
+	pc_ = addr_abs_;
 }
 
 void CPU6502::jsr()
 {
-	return;
+	push16(pc_ - 1);
+	pc_ = addr_abs_;
 }
 void CPU6502::lda()
 {
-	return;
+	a_ = fetch();
+	test_zero(a_);
+	test_sign(a_);
+	penalty_op_ = 1;
 }
 void CPU6502::ldx()
 {
-	return;
+	x_ = fetch();
+	test_zero(x_);
+	test_sign(x_);
+	penalty_op_ = 1;
 }
 void CPU6502::ldy()
 {
-	return;
+	y_ = fetch();
+	test_zero(y_);
+	test_sign(y_);
+	penalty_op_ = 1;
 }
 
 void CPU6502::lsr()
 {
-	return;
+	uint16_t v = fetch();
+	status_ &= ~flag_carry; status_ |= (v & flag_carry);
+	v = v >> 1;
+	test_zero(v);
+	test_sign(v);
+	put(v & 0x00ff);
 }
 void CPU6502::nop()
 {
-	return;
+	switch (opcode_)
+	{
+	case 0x1c:
+	case 0x3c:
+	case 0x5c:
+	case 0x7c:
+	case 0xdc:
+	case 0xfc:
+		penalty_op_ = 1;
+		break;
+	}
 }
 void CPU6502::ora()
 {
-	return;
+	uint8_t v = fetch();
+	a_ = a_ | v;
+	test_zero(a_);
+	test_sign(a_);
 }
 void CPU6502::pha()
 {
-	return;
+	push8(a_);
 }
 
 void CPU6502::php()
 {
-	return;
+	push8(status_ | flag_break);
 }
 void CPU6502::pla()
 {
-	return;
+	a_ = pull8();
+	test_zero(a_);
+	test_sign(a_);
 }
 void CPU6502::plp()
 {
-	return;
+	status_ = pull8() | flag_constant;
 }
 void CPU6502::rol()
 {
-	return;
+	uint16_t v = fetch();
+	uint16_t result = (v << 1) | (status_ & flag_carry);
+	test_carry(result);
+	test_zero(result);
+	test_sign(result);
+	put(result & 0x00ff);
 }
 
 void CPU6502::ror()
 {
-	return;
+	uint16_t v = fetch();
+	uint16_t result = (v >> 1) | ((status_ & flag_carry) << 7);	
+	(v & 0x0001) ? status_ |= flag_carry : status_ &= ~flag_carry;
+	test_zero(result);
+	test_sign(result);
+	put(result & 0x00ff);
 }
 void CPU6502::rti()
 {
-	return;
+	status_ = pull8();
+	status_ &= ~flag_break;
+	status_ &= ~flag_constant;
+	pc_ = pull16();
 }
 void CPU6502::rts()
 {
-	return;
+	pc_ = pull16() + 1;
 }
 void CPU6502::sbc()
 {
-	return;
+	uint16_t v = fetch() ^ 0x00ff;
+	uint16_t result = (uint16_t)a_ + v + (uint16_t)(status_ & flag_carry);
+	test_carry(result);
+	test_zero(result);
+	test_sign(result);
+	test_overflow(a_, v, result);
+	a_ = result & 0x00ff;
+	penalty_op_ = 1;
 }
 
 void CPU6502::sec()
 {
-	return;
+	status_ |= flag_carry;
 }
 void CPU6502::sed()
 {
-	return;
+	status_ |= flag_decimal;
 }
 void CPU6502::sei()
 {
-	return;
+	status_ |= flag_interrupt;
 }
 void CPU6502::sta()
 {
-	return;
+	put(a_);
 }
 
 void CPU6502::stx()
 {
-	return;
+	put(x_);
 }
 void CPU6502::sty()
 {
-	return;
+	put(y_);
 }
 void CPU6502::tax()
 {
-	return;
+	x_ = a_;
+	test_zero(x_);
+	test_sign(x_);
 }
 void CPU6502::tay()
 {
-	return;
+	y_ = a_;
+	test_zero(y_);
+	test_sign(y_);
 }
 
 void CPU6502::tsx()
 {
-	return;
+	x_ = sp_;
+	test_zero(x_);
+	test_sign(x_);
 }
 void CPU6502::txa()
 {
-	return;
+	a_ = x_;
+	test_zero(a_);
+	test_sign(a_);
 }
 void CPU6502::txs()
 {
-	return;
+	sp_ = x_;
 }
 void CPU6502::tya()
 {
-	return;
+	a_ = y_;
+	test_zero(a_);
+	test_sign(a_);
 }
 
 void CPU6502::slo()
 {
-	return;
+	nop();
 }
 void CPU6502::rla()
 {
-	return;
+	nop();
 }
 void CPU6502::sre()
 {
-	return;
+	nop();
 }
 void CPU6502::rra()
 {
-	return;
+	nop();
 }
 
 void CPU6502::sax()
 {
-	return;
+	nop();
 }
 void CPU6502::lax()
 {
-	return;
+	nop();
 }
 void CPU6502::dcp()
 {
-	return;
+	nop();
 }
 void CPU6502::isb()
 {
-	return;
+	nop();
 }
 
 
@@ -519,4 +715,32 @@ uint16_t CPU6502::pull16()
 	uint16_t val = bus_ptr_->read(stack_base_addr_ + ++sp_);
 	val |= ((uint16_t)bus_ptr_->read(stack_base_addr_ + ++sp_) & 0x00ff) << 8;
 	return val;
+}
+
+uint8_t CPU6502::fetch()
+{
+	if (addr_table_[opcode_] == &a::acc ||
+		addr_table_[opcode_] == &a::imp)
+		return a_;
+	else
+		return bus_ptr_->read(addr_abs_);
+}
+void  CPU6502::put(uint8_t val)
+{
+	if (addr_table_[opcode_] == &a::acc ||
+		addr_table_[opcode_] == &a::imp)
+		a_ = val;
+	else
+		bus_ptr_->write(addr_abs_, val);
+}
+
+char* CPU6502::cpu_status()
+{
+	cpu_status_buffer_[255] = 0x00;
+	snprintf(cpu_status_buffer_,255, "%10llu:%10llu # PC:%04X A:%02X X:%02X Y:%02X %s%s%s%s%s%s%s%s sp:%02X\n",
+		total_cycles_, total_instructions_, pc_,  a_, x_, y_,
+		status_ & flag_sign ? "N" : ".", status_ & flag_overflow ? "V" : ".", status_ & flag_constant ? "U" : ".",
+		status_ & flag_break ? "B" : ".", status_ & flag_decimal ? "D" : ".", status_ & flag_interrupt ? "I" : ".",
+		status_ & flag_zero ? "Z" : ".", status_ & flag_carry ? "C" : ".", sp_);
+	return cpu_status_buffer_;
 }

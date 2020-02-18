@@ -9,6 +9,9 @@
 #include "afxdialogex.h"
 #include "CPU6502.h"
 #include "Bus.h"
+#include <iostream>
+#include <fstream>
+using namespace std;
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -60,6 +63,7 @@ CpcgtDlg::CpcgtDlg(CWnd* pParent /*=nullptr*/)
 void CpcgtDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_EDIT_CPU_INFO, m_edit_cpu_info);
 }
 
 BEGIN_MESSAGE_MAP(CpcgtDlg, CDialogEx)
@@ -67,6 +71,8 @@ BEGIN_MESSAGE_MAP(CpcgtDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CpcgtDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CpcgtDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CpcgtDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -102,6 +108,25 @@ BOOL CpcgtDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+
+	ncpu.connect(&nbus);
+	ncpu.rst();
+	streampos size;
+	char* memblock;
+	ifstream file("E:\\works\\pcgt\\test_bin\\6502_functional_test.bin", ios::in | ios::binary | ios::ate);
+	if (file.is_open())
+	{
+		size = file.tellg();
+		memblock = new char[size];
+		file.seekg(0, ios::beg);
+		file.read(memblock, size);
+		file.close();
+
+		cout << "the entire file content is in memory";
+		memcpy(nbus.memory_, memblock, size);
+
+		delete[] memblock;
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -160,10 +185,30 @@ HCURSOR CpcgtDlg::OnQueryDragIcon()
 void CpcgtDlg::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	Bus nbus;
-	CPU6502 ncpu;
-	ncpu.connect(&nbus);
-	ncpu.rst();
-	for (int i = 0; i < 100; i++)
+	USES_CONVERSION;
+	for (int i = 0; i < 10000; i++)
 		ncpu.ticktock();
+	m_edit_cpu_info.SetWindowTextW(A2W(ncpu.cpu_status()));
+}
+
+
+void CpcgtDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	uint16_t a = 0x00a5;
+	uint16_t b = 0x0074;
+	uint16_t  s_b = (0x80 | ~b + 1);
+	uint16_t c = a - b;
+	uint16_t d = a + (int16_t)s_b;
+	(void)d;
+}
+
+
+void CpcgtDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	USES_CONVERSION;
+	for (int i = 0; i < 1; i++)
+		ncpu.ticktock();
+	m_edit_cpu_info.SetWindowTextW(A2W(ncpu.cpu_status()));
 }
