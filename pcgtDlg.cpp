@@ -7,7 +7,8 @@
 #include "pcgt.h"
 #include "pcgtDlg.h"
 #include "afxdialogex.h"
-
+#include "CPU6502.h"
+#include "Bus.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(CpcgtDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON1, &CpcgtDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -153,3 +155,15 @@ HCURSOR CpcgtDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CpcgtDlg::OnBnClickedButton1()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	Bus nbus;
+	CPU6502 ncpu;
+	ncpu.connect(&nbus);
+	ncpu.rst();
+	for (int i = 0; i < 100; i++)
+		ncpu.ticktock();
+}

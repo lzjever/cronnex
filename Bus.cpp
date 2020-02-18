@@ -1,2 +1,19 @@
 #include "pch.h"
 #include "Bus.h"
+
+
+
+Bus::Bus():
+	memory_{ 0xa9, 0x01, 0x8d, 0x00, 0x02, 0xa9, 0x05, 0x8d, 0x01, 0x02, 0xa9, 0x08, 0x8d, 0x02, 0x02 }
+{
+	memory_[0xfffc] = 0x00;
+	memory_[0xfffd] = 0x00;
+}
+uint8_t Bus::read(uint16_t address) 
+{ 
+	return memory_[address];
+}
+void Bus::write(uint16_t address, uint8_t value) 
+{
+	memory_[address] = value;
+}

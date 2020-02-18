@@ -5,25 +5,25 @@
 
 CPU6502::CPU6502(uint16_t stack_base_addr):
 	stack_base_addr_(stack_base_addr), bus_ptr_(NULL),
-	addrtable{
-		&a::imp,	&a::indx,	&a::imp,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::acc,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx,
-		&a::abso,	&a::indx,	&a::imp,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::acc,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx,
-		&a::imp,	&a::indx,	&a::imp,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::acc,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx,
-		&a::imp,	&a::indx,	&a::imp,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::acc,	&a::imm,	&a::ind,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx,
-		&a::imm,	&a::indx,	&a::imm,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::imp,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpy,	&a::zpy,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absy,	&a::absy,
-		&a::imm,	&a::indx,	&a::imm,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::imp,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpy,	&a::zpy,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absy,	&a::absy,
-		&a::imm,	&a::indx,	&a::imm,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::imp,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx,
-		&a::imm,	&a::indx,	&a::imm,	&a::indx,	&a::zp,		&a::zp,		&a::zp,		&a::zp,		&a::imp,	&a::imm,	&a::imp,	&a::imm,	&a::abso,	&a::abso,	&a::abso,	&a::abso,
-		&a::rel,	&a::indy,	&a::imp,	&a::indy,	&a::zpx,	&a::zpx,	&a::zpx,	&a::zpx,	&a::imp,	&a::absy,	&a::imp,	&a::absy,	&a::absx,	&a::absx,	&a::absx,	&a::absx
-	},
-	optable{
+	addr_table_{
+		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
+		 &a::abso,&a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
+		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
+		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::ind, &a::abso,&a::abso, &a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
+		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpy, &a::zpy, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absy,&a::absy,
+		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpy, &a::zpy, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absy,&a::absy,
+		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
+		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
+		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx
+		 },
+	op_table_{
 		&a::brk, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::php, &a::ora, &a::asl, &a::nop, &a::nop, &a::ora, &a::asl, &a::slo,
 		&a::bpl, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::clc, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo,
 		&a::jsr, &a::and, &a::nop, &a::rla, &a::bit, &a::and, &a::rol, &a::rla, &a::plp, &a::and, &a::rol, &a::nop, &a::bit, &a::and, &a::rol, &a::rla,
@@ -41,7 +41,7 @@ CPU6502::CPU6502(uint16_t stack_base_addr):
 		&a::cpx, &a::sbc, &a::nop, &a::isb, &a::cpx, &a::sbc, &a::inc, &a::isb, &a::inx, &a::sbc, &a::nop, &a::sbc, &a::cpx, &a::sbc, &a::inc, &a::isb,
 		&a::beq, &a::sbc, &a::nop, &a::isb, &a::nop, &a::sbc, &a::inc, &a::isb, &a::sed, &a::sbc, &a::nop, &a::isb, &a::nop, &a::sbc, &a::inc, &a::isb 
 	},
-	ticktable{
+	cycle_table_{
 		7,    6,    2,    8,    3,    3,    5,    5,    3,    2,    2,    2,    4,    4,    6,    6, 
 		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
 		6,    6,    2,    8,    3,    3,    5,    5,    4,    2,    2,    2,    4,    4,    6,    6, 
@@ -64,353 +64,459 @@ CPU6502::CPU6502(uint16_t stack_base_addr):
 
 
 
-void CPU6502::TickTock()
+void CPU6502::test_zero(const uint16_t& result)
 {
-	assert(bus_ptr_);
+	if (result & 0x00ff)
+		status_ &= ~flag_zero;
+	else
+		status_ |= flag_zero;
+}
 
-}
-void CPU6502::RST()
+void CPU6502::test_sign(const uint16_t& result)
 {
-	assert(bus_ptr_);
+	if (result & 0x0080)
+		status_ |= flag_sign;
+	else
+		status_ &= ~flag_sign;
 }
-void CPU6502::IRQ()
-{
-	assert(bus_ptr_);
 
+void CPU6502::test_carry(const uint16_t& result)
+{
+	if (result & 0xff00)
+		status_ |= flag_carry;
+	else
+		status_ &= ~flag_carry;
 }
-void CPU6502::NMI()
+
+// A  M  R | V | A^R | A^M |~(A^M) | 
+// 0  0  0 | 0 |  0  |  0  |   1   |
+// 0  0  1 | 1 |  1  |  0  |   1   |
+// 0  1  0 | 0 |  0  |  1  |   0   |
+// 0  1  1 | 0 |  1  |  1  |   0   |  so V = ~(A^M) & (A^R)
+// 1  0  0 | 0 |  1  |  1  |   0   |
+// 1  0  1 | 0 |  0  |  1  |   0   |
+// 1  1  0 | 1 |  1  |  0  |   1   |
+// 1  1  1 | 0 |  0  |  0  |   1   |
+void CPU6502::test_overflow(const uint16_t& old_a, const uint16_t& m, const uint16_t& result)
+{
+	uint16_t v = ~((uint16_t)old_a ^ (uint16_t)m) & ((uint16_t)old_a ^ (uint16_t)result);
+	if (v & 0x0080)
+		status_ |= flag_overflow;
+	else
+		status_ &= ~flag_overflow;
+}
+
+
+
+
+void CPU6502::ticktock()
 {
 	assert(bus_ptr_);
+	if (0 == cycles_left_on_ins_)
+	{
+		uint8_t opcode = bus_ptr_->read(pc_++);
+		status_ |= flag_constant;
+		penalty_op = penalty_addr = 0;
+		(this->*addr_table_[opcode])();
+		(this->*op_table_[opcode])();
+		cycles_left_on_ins_ = cycle_table_[opcode];
+		total_instructions_++;
+
+		if (penalty_addr && penalty_op)	cycles_left_on_ins_++;
+	}
+	cycles_left_on_ins_--;
+	total_cycles_++;
+}
+void CPU6502::rst()
+{
+	assert(bus_ptr_);
+	pc_ = (uint16_t)bus_ptr_->read(0xfffc) | ((uint16_t)bus_ptr_->read(0xfffd) << 8);
+	a_ = x_ = y_ = 0;
+	sp_ = 0xfd;
+	status_ = flag_constant;
+	//manually set the cycle counts.
+	cycles_left_on_ins_ = 8;
+}
+void CPU6502::irq()
+{
+	assert(bus_ptr_);
+	if (status_ & flag_interrupt) // if disable interrupt flag is set
+		return;
+	push16(pc_);
+	push8(status_);
+	status_ &= ~flag_break;
+	status_ |= flag_interrupt;
+	status_ |= flag_constant;
+	pc_ = (uint16_t)bus_ptr_->read(0xfffe) | ((uint16_t)bus_ptr_->read(0xffff) << 8);
+	//manually set the cycle counts.
+	cycles_left_on_ins_ = 7;
+}
+void CPU6502::nmi()
+{
+	assert(bus_ptr_);
+	push16(pc_);
+	push8(status_);
+	status_ &= ~flag_break;
+	status_ |= flag_interrupt;
+	status_ |= flag_constant;
+	pc_ = (uint16_t)bus_ptr_->read(0xfffa) | ((uint16_t)bus_ptr_->read(0xfffb) << 8);
+	//manually set the cycle counts.
+	cycles_left_on_ins_ = 8;
 
 }
 
 ////////////////////////////////
 // addr
-uint8_t CPU6502::acc()
+void CPU6502::acc()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::imm()
+void CPU6502::imm()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::abso()
+void CPU6502::abso()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::zp()
+void CPU6502::zp()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::zpx()
+void CPU6502::zpx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::zpy()
+void CPU6502::zpy()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::absx()
+void CPU6502::absx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::absy()
+void CPU6502::absy()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::imp()
+void CPU6502::imp()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::rel()
+void CPU6502::rel()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::indx()
+void CPU6502::indx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::indy()
+void CPU6502::indy()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::ind()
+void CPU6502::ind()
 {
-	return 0;
+	return;
 }
 
 
 
 ///////////////////////////////////
 //op
-uint8_t CPU6502::adc()
+void CPU6502::adc()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::and()
+void CPU6502::and()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::asl()
+void CPU6502::asl()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::bcc()
+void CPU6502::bcc()
 {
-	return 0;
-}
-
-uint8_t CPU6502::bcs()
-{
-	return 0;
-}
-uint8_t CPU6502::beq()
-{
-	return 0;
-}
-uint8_t CPU6502::bit()
-{
-	return 0;
-}
-uint8_t CPU6502::bmi()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::bne()
+void CPU6502::bcs()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::bpl()
+void CPU6502::beq()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::brk()
+void CPU6502::bit()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::bvc()
+void CPU6502::bmi()
 {
-	return 0;
-}
-
-uint8_t CPU6502::bvs()
-{
-	return 0;
-}
-uint8_t CPU6502::clc()
-{
-	return 0;
-}
-uint8_t CPU6502::cld()
-{
-	return 0;
-}
-uint8_t CPU6502::cli()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::clv()
+void CPU6502::bne()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::cmp()
+void CPU6502::bpl()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::cpx()
+void CPU6502::brk()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::cpy()
+void CPU6502::bvc()
 {
-	return 0;
-}
-
-uint8_t CPU6502::dec()
-{
-	return 0;
-}
-uint8_t CPU6502::dex()
-{
-	return 0;
-}
-uint8_t CPU6502::dey()
-{
-	return 0;
-}
-uint8_t CPU6502::eor()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::inc()
+void CPU6502::bvs()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::inx()
+void CPU6502::clc()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::iny()
+void CPU6502::cld()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::jmp()
+void CPU6502::cli()
 {
-	return 0;
-}
-
-uint8_t CPU6502::jsr()
-{
-	return 0;
-}
-uint8_t CPU6502::lda()
-{
-	return 0;
-}
-uint8_t CPU6502::ldx()
-{
-	return 0;
-}
-uint8_t CPU6502::ldy()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::lsr()
+void CPU6502::clv()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::nop()
+void CPU6502::cmp()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::ora()
+void CPU6502::cpx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::pha()
+void CPU6502::cpy()
 {
-	return 0;
-}
-
-uint8_t CPU6502::php()
-{
-	return 0;
-}
-uint8_t CPU6502::pla()
-{
-	return 0;
-}
-uint8_t CPU6502::plp()
-{
-	return 0;
-}
-uint8_t CPU6502::rol()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::ror()
+void CPU6502::dec()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::rti()
+void CPU6502::dex()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::rts()
+void CPU6502::dey()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::sbc()
+void CPU6502::eor()
 {
-	return 0;
-}
-
-uint8_t CPU6502::sec()
-{
-	return 0;
-}
-uint8_t CPU6502::sed()
-{
-	return 0;
-}
-uint8_t CPU6502::sei()
-{
-	return 0;
-}
-uint8_t CPU6502::sta()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::stx()
+void CPU6502::inc()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::sty()
+void CPU6502::inx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::tax()
+void CPU6502::iny()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::tay()
+void CPU6502::jmp()
 {
-	return 0;
-}
-
-uint8_t CPU6502::tsx()
-{
-	return 0;
-}
-uint8_t CPU6502::txa()
-{
-	return 0;
-}
-uint8_t CPU6502::txs()
-{
-	return 0;
-}
-uint8_t CPU6502::tya()
-{
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::slo()
+void CPU6502::jsr()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::rla()
+void CPU6502::lda()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::sre()
+void CPU6502::ldx()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::rra()
+void CPU6502::ldy()
 {
-	return 0;
+	return;
 }
 
-uint8_t CPU6502::sax()
+void CPU6502::lsr()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::lax()
+void CPU6502::nop()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::dcp()
+void CPU6502::ora()
 {
-	return 0;
+	return;
 }
-uint8_t CPU6502::isb()
+void CPU6502::pha()
 {
-	return 0;
+	return;
+}
+
+void CPU6502::php()
+{
+	return;
+}
+void CPU6502::pla()
+{
+	return;
+}
+void CPU6502::plp()
+{
+	return;
+}
+void CPU6502::rol()
+{
+	return;
+}
+
+void CPU6502::ror()
+{
+	return;
+}
+void CPU6502::rti()
+{
+	return;
+}
+void CPU6502::rts()
+{
+	return;
+}
+void CPU6502::sbc()
+{
+	return;
+}
+
+void CPU6502::sec()
+{
+	return;
+}
+void CPU6502::sed()
+{
+	return;
+}
+void CPU6502::sei()
+{
+	return;
+}
+void CPU6502::sta()
+{
+	return;
+}
+
+void CPU6502::stx()
+{
+	return;
+}
+void CPU6502::sty()
+{
+	return;
+}
+void CPU6502::tax()
+{
+	return;
+}
+void CPU6502::tay()
+{
+	return;
+}
+
+void CPU6502::tsx()
+{
+	return;
+}
+void CPU6502::txa()
+{
+	return;
+}
+void CPU6502::txs()
+{
+	return;
+}
+void CPU6502::tya()
+{
+	return;
+}
+
+void CPU6502::slo()
+{
+	return;
+}
+void CPU6502::rla()
+{
+	return;
+}
+void CPU6502::sre()
+{
+	return;
+}
+void CPU6502::rra()
+{
+	return;
+}
+
+void CPU6502::sax()
+{
+	return;
+}
+void CPU6502::lax()
+{
+	return;
+}
+void CPU6502::dcp()
+{
+	return;
+}
+void CPU6502::isb()
+{
+	return;
+}
+
+
+void CPU6502::push8(uint8_t val)
+{
+	assert(bus_ptr_);
+	bus_ptr_->write(stack_base_addr_ + sp_--,val);
+}
+uint8_t CPU6502::pull8()
+{
+	assert(bus_ptr_);
+	return bus_ptr_->read(stack_base_addr_ + ++sp_);
+}
+void CPU6502::push16(uint16_t val)
+{
+	assert(bus_ptr_);
+	bus_ptr_->write(stack_base_addr_ + sp_--, (val>>8) & 0x00ff );
+	bus_ptr_->write(stack_base_addr_ + sp_--, val & 0x00ff);
+}
+uint16_t CPU6502::pull16()
+{
+	assert(bus_ptr_);
+	uint16_t val = bus_ptr_->read(stack_base_addr_ + ++sp_);
+	val |= ((uint16_t)bus_ptr_->read(stack_base_addr_ + ++sp_) & 0x00ff) << 8;
+	return val;
 }

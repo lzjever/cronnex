@@ -3,7 +3,10 @@
 class Bus
 {
 public:
-	bool Read(uint16_t address, uint8_t &value) { return true; }
-	bool Write(uint16_t address, uint8_t value) { return true; }
+	Bus();
+	uint8_t read(uint16_t address);
+	void write(uint16_t address, uint8_t value);
+private:
+	uint8_t	memory_[0xffff];
 };
 
