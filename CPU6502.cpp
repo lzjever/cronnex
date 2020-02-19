@@ -81,7 +81,7 @@ void CPU6502::test_sign(const uint16_t& result)
 
 void CPU6502::test_carry(const uint16_t& result)
 {
-	if (result & 0xff00)
+	if (result & 0x0100)
 		status_ |= flag_carry;
 	else
 		status_ &= ~flag_carry;
@@ -96,9 +96,9 @@ void CPU6502::test_carry(const uint16_t& result)
 // 1  0  1 | 0 |  0  |  1  |   0   |
 // 1  1  0 | 1 |  1  |  0  |   1   |
 // 1  1  1 | 0 |  0  |  0  |   1   |
-void CPU6502::test_overflow(const uint16_t& old_a, const uint16_t& m, const uint16_t& result)
+void CPU6502::test_overflow(const uint16_t& a, const uint16_t& fetched, const uint16_t& result)
 {
-	uint16_t v = ~((uint16_t)old_a ^ (uint16_t)m) & ((uint16_t)old_a ^ (uint16_t)result);
+	uint16_t v = ~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)result);
 	if (v & 0x0080)
 		status_ |= flag_overflow;
 	else
@@ -252,31 +252,53 @@ void CPU6502::indy()
 //op
 void CPU6502::adc()
 {
-	uint16_t v = (uint16_t)fetch();
-	uint16_t result = (uint16_t)a_ + v + ((uint16_t)status_ & flag_carry);
-	test_carry(result);
+	uint8_t v = fetch();
+	uint16_t result = v + a_ + ((status_ & flag_carry) ? 1 : 0);
 	test_zero(result);
-	test_overflow(a_, v, result);
-	test_sign(result);
-#ifdef CPU_SUPPORT_DECIMAL
-	if (status_ & flag_decimal) 
+	if (status_ & flag_decimal)
 	{
-		status_ &= ~flag_carry;
-		if ((result & 0x0F) > 0x09)
-		{
-			result += 0x06;
-		}
-		if ((result & 0xF0) > 0x90)
+		if (((a_ & 0xf) + (v & 0xf) + ((status_ & flag_carry) ? 1 : 0)) > 0x0009) result += 0x0006;
+		test_sign(result);
+		test_overflow(a_, v, result);
+		if (result > 0x99)
 		{
 			result += 0x60;
-			status_ &= ~flag_carry;
 		}
-		cycles_left_on_ins_++;
+		result > 0x0099 ? status_ |= flag_carry : status_ &= ~flag_carry;
 	}
-#endif
-	a_ = result & 0x00ff;
+	else
+	{
+		test_sign(result);
+		test_overflow(a_, v, result);
+		test_carry(result);
+	}
+
+	a_ = result & 0xff;
 	penalty_op_ = 1;
 }
+
+
+void CPU6502::sbc()
+{
+	uint8_t v = fetch();
+	uint16_t result = a_ - v - ((status_ & flag_carry) ? 0 : 1);
+	test_sign(result);
+	test_zero(result);
+	(((a_ ^ result) & 0x80) && ((a_ ^ v) & 0x80)) ? 
+		status_ |= flag_overflow : status_ &= ~flag_overflow;
+	if (status_ & flag_decimal)
+	{
+		if (((a_ & 0x0f) - ((status_ & flag_carry) ? 0 : 1)) < (v & 0x0f)) result -= 0x0006;
+		if (result > 0x99)
+		{
+			result -= 0x60;
+		}
+	}
+	result < 0x0100 ? status_ |= flag_carry : status_ &= ~flag_carry;
+	a_ = (result & 0xff);
+	penalty_op_ = 1;
+}
+
 void CPU6502::and()
 {
 	uint8_t v = fetch();
@@ -601,32 +623,6 @@ void CPU6502::rti()
 void CPU6502::rts()
 {
 	pc_ = pull16() + 1;
-}
-void CPU6502::sbc()
-{
-	uint16_t v = fetch() ^ 0x00ff;
-	uint16_t result = (uint16_t)a_ + v + (uint16_t)(status_ & flag_carry);
-	test_carry(result);
-	test_zero(result);
-	test_sign(result);
-	test_overflow(a_, v, result);
-
-#ifdef CPU_SUPPORT_DECIMAL
-	if (status_ & flag_decimal) {
-		status_ &= ~flag_carry;
-		result -= 0x66;
-		if ((result & 0x0F) > 0x09) {
-			result += 0x06;
-		}
-		if ((result & 0xF0) > 0x90) {
-			result += 0x60;
-			status_ |= flag_carry;
-		}
-		cycles_left_on_ins_++;
-	}
-#endif
-	a_ = result & 0x00ff;
-	penalty_op_ = 1;
 }
 
 void CPU6502::sec()

@@ -6,7 +6,9 @@
 #include <string>
 #include "Bus.h"
 #define CPU_SUPPORT_DECIMAL 1
-#define EMULATE_UNOFFICIAL_OP 1
+//#define EMULATE_UNOFFICIAL_OP 1
+
+
 class CPU6502
 {
 public:
@@ -64,6 +66,34 @@ private:
 
 	uint8_t fetch();
 	void  put(uint8_t val);
+
+private:
+
+	inline void set_sign(bool x) { 
+		x ? (status_ |= flag_sign) : (status_ &= (~flag_sign)); 
+	}
+	inline void set_overflow(bool x) {
+		x ? (status_ |= flag_overflow) : (status_ &= (~flag_overflow)); 
+	}
+	inline void set_constant(bool x) {
+		x ? (status_ |= flag_constant) : (status_ &= (~flag_constant)); 
+	}
+	inline void set_break(bool x) {
+		x ? (status_ |= flag_break) : (status_ &= (~flag_break)); 
+	}
+	inline void set_decimal(bool x) {
+		x ? (status_ |= flag_decimal) : (status_ &= (~flag_decimal));
+	}
+	inline void set_interrupt(bool x) {
+		x ? (status_ |= flag_interrupt) : (status_ &= (~flag_interrupt));
+	}
+	inline void set_zero(bool x) {
+		x ? (status_ |= flag_zero) : (status_ &= (~flag_zero));
+	}
+	inline void set_carry(bool x) {
+		x ? (status_ |= flag_carry) : (status_ &= (~flag_carry));
+	}
+
 
 private:
 	//config
