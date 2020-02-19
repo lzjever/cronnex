@@ -5,6 +5,8 @@
 #include<cstdint>
 #include <string>
 #include "Bus.h"
+#define CPU_SUPPORT_DECIMAL 1
+#define EMULATE_UNOFFICIAL_OP 1
 class CPU6502
 {
 public:

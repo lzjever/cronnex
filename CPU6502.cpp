@@ -133,6 +133,7 @@ void CPU6502::rst()
 	status_ = flag_constant;
 	//manually set the cycle counts.
 	cycles_left_on_ins_ = 8;
+	total_instructions_ = 0;
 }
 void CPU6502::irq()
 {
@@ -257,6 +258,22 @@ void CPU6502::adc()
 	test_zero(result);
 	test_overflow(a_, v, result);
 	test_sign(result);
+#ifdef CPU_SUPPORT_DECIMAL
+	if (status_ & flag_decimal) 
+	{
+		status_ &= ~flag_carry;
+		if ((result & 0x0F) > 0x09)
+		{
+			result += 0x06;
+		}
+		if ((result & 0xF0) > 0x90)
+		{
+			result += 0x60;
+			status_ &= ~flag_carry;
+		}
+		cycles_left_on_ins_++;
+	}
+#endif
 	a_ = result & 0x00ff;
 	penalty_op_ = 1;
 }
@@ -593,6 +610,21 @@ void CPU6502::sbc()
 	test_zero(result);
 	test_sign(result);
 	test_overflow(a_, v, result);
+
+#ifdef CPU_SUPPORT_DECIMAL
+	if (status_ & flag_decimal) {
+		status_ &= ~flag_carry;
+		result -= 0x66;
+		if ((result & 0x0F) > 0x09) {
+			result += 0x06;
+		}
+		if ((result & 0xF0) > 0x90) {
+			result += 0x60;
+			status_ |= flag_carry;
+		}
+		cycles_left_on_ins_++;
+	}
+#endif
 	a_ = result & 0x00ff;
 	penalty_op_ = 1;
 }

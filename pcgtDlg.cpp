@@ -186,7 +186,7 @@ void CpcgtDlg::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	USES_CONVERSION;
-	for (int i = 0; i < 10000; i++)
+	for (int i = 0; i < 10000000; i++)
 		ncpu.ticktock();
 	m_edit_cpu_info.SetWindowTextW(A2W(ncpu.cpu_status()));
 }
