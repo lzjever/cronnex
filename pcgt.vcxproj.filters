@@ -39,6 +39,9 @@
     <ClInclude Include="Bus.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Cartridge.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pcgt.cpp">
@@ -54,6 +57,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Bus.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Cartridge.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
