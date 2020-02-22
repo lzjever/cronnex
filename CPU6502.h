@@ -8,15 +8,15 @@
 #define CPU_SUPPORT_DECIMAL 1
 //#define EMULATE_UNOFFICIAL_OP 1
 
-
+class Bus;
 class CPU6502
 {
 public:
 	using a = CPU6502;
 	CPU6502(uint16_t stack_base_addr = 0x0100);
 	void connect(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
-	void ticktock();
-	void rst();
+	void clock();
+	void reset();
 	void irq();
 	void nmi();
 	char* cpu_status();
@@ -135,6 +135,6 @@ private:
 	op_ptr		op_table_[256];
 	uint32_t	cycle_table_[256];
 
-	char	cpu_status_buffer_[256];
+	char	cpu_status_buffer_[512];
 
 };
