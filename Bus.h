@@ -12,8 +12,9 @@ public:
 	void insert_cartridge(const std::shared_ptr<Cartridge>& cartridge);
 	void reset();
 	void clock();
-	uint8_t read(uint16_t addr, bool bReadOnly = false);
-	void    write(uint16_t addr, uint8_t data);
+	bool read(uint16_t addr, uint8_t &data, bool bReadOnly = false);
+	bool write(uint16_t addr, uint8_t data);
+	bool dma();
 
 public:
 
@@ -29,5 +30,12 @@ public:
 private:
 	uint32_t total_cycles_ = 0;
 	uint8_t controller_state_[2];
+
+	//variables for DMA
+	uint8_t dma_page_index_ = 0x00;
+	uint8_t dma_inpage_addr_ = 0x00;
+	uint8_t dma_data_on_transfer_ = 0x00;
+	bool is_dma_mode_;
+	uint32_t cycles_on_dma_;
 };
 

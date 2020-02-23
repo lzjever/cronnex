@@ -9,7 +9,7 @@ using namespace std;
 class Cartridge
 {
 public:
-	Cartridge(const std::string& sFileName);
+	Cartridge(const std::string& file_name);
 	~Cartridge();
 
 
@@ -22,6 +22,14 @@ public:
 		flag_vertical
 	} mirror_type_ = flag_horizontal;
 
+
+public:
+	bool prg_read(uint16_t addr, uint8_t& data);
+	bool prg_write(uint16_t addr, uint8_t data);
+	bool chr_read(uint16_t addr, uint8_t& data);
+	bool chr_write(uint16_t addr, uint8_t data);
+
+	void reset();
 private:
 	bool is_rom_valid_ = false;
 
@@ -32,17 +40,5 @@ private:
 	std::vector<uint8_t> grp_memory_;
 	std::vector<uint8_t> chr_memory_;
 	std::shared_ptr<Mapper> mapper_;
-
-public:
-	// Communication with Main Bus
-	bool cpuRead(uint16_t addr, uint8_t& data);
-	bool cpuWrite(uint16_t addr, uint8_t data);
-
-	// Communication with PPU Bus
-	bool ppuRead(uint16_t addr, uint8_t& data);
-	bool ppuWrite(uint16_t addr, uint8_t data);
-
-	// Permits system rest of mapper to know state
-	void reset();
 };
 

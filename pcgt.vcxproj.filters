@@ -15,67 +15,52 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pcgt.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="pcgtDlg.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="framework.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="CPU6502.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Bus.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Cartridge.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CPU6502.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Mapper_000.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="olcPixelGameEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PPU2C02.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pcgt.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="pcgtDlg.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CPU6502.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Bus.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Cartridge.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="pcgt.rc">
-      <Filter>资源文件</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\pcgt.rc2">
-      <Filter>资源文件</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\pcgt.ico">
-      <Filter>资源文件</Filter>
-    </Image>
+    <ClCompile Include="CPU6502.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Mapper_000.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="olcPixelGameEngine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PPU2C02.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

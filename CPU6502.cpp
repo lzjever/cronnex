@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "CPU6502.h"
 
 
@@ -25,8 +24,8 @@ CPU6502::CPU6502(uint16_t stack_base_addr):
 	op_table_{
 		&a::brk, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::php, &a::ora, &a::asl, &a::nop, &a::nop, &a::ora, &a::asl, &a::slo,
 		&a::bpl, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::clc, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo,
-		&a::jsr, &a::and, &a::nop, &a::rla, &a::bit, &a::and, &a::rol, &a::rla, &a::plp, &a::and, &a::rol, &a::nop, &a::bit, &a::and, &a::rol, &a::rla,
-		&a::bmi, &a::and, &a::nop, &a::rla, &a::nop, &a::and, &a::rol, &a::rla, &a::sec, &a::and, &a::nop, &a::rla, &a::nop, &a::and, &a::rol, &a::rla,
+		&a::jsr, &a::and_, &a::nop, &a::rla, &a::bit, &a::and_, &a::rol, &a::rla, &a::plp, &a::and_, &a::rol, &a::nop, &a::bit, &a::and_, &a::rol, &a::rla,
+		&a::bmi, &a::and_, &a::nop, &a::rla, &a::nop, &a::and_, &a::rol, &a::rla, &a::sec, &a::and_, &a::nop, &a::rla, &a::nop, &a::and_, &a::rol, &a::rla,
 		&a::rti, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre, &a::pha, &a::eor, &a::lsr, &a::nop, &a::jmp, &a::eor, &a::lsr, &a::sre,
 		&a::bvc, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre, &a::cli, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre,
 		&a::rts, &a::adc, &a::nop, &a::rra, &a::nop, &a::adc, &a::ror, &a::rra, &a::pla, &a::adc, &a::ror, &a::nop, &a::jmp, &a::adc, &a::ror, &a::rra,
@@ -110,7 +109,7 @@ void CPU6502::clock()
 	assert(bus_ptr_);
 	if (0 == cycles_left_on_ins_)
 	{
-		opcode_ = bus_ptr_->read(pc_++);
+		opcode_ = bus_read8(pc_++);
 		status_ |= flag_constant;
 		penalty_op_ = penalty_addr_ = 0;
 		(this->*addr_table_[opcode_])();
@@ -126,7 +125,7 @@ void CPU6502::clock()
 void CPU6502::reset()
 {
 	assert(bus_ptr_);
-	pc_ = (uint16_t)bus_ptr_->read(0xfffc) | ((uint16_t)bus_ptr_->read(0xfffd) << 8);
+	pc_ = bus_read16(0xfffc) | (bus_read16(0xfffd) << 8);
 	//pc_ = 0x0400;  //debug
 	a_ = x_ = y_ = 0;
 	sp_ = 0xfd;
@@ -146,7 +145,7 @@ void CPU6502::irq()
 	status_ &= ~flag_break;
 	status_ |= flag_interrupt;
 	status_ |= flag_constant;
-	pc_ = (uint16_t)bus_ptr_->read(0xfffe) | ((uint16_t)bus_ptr_->read(0xffff) << 8);
+	pc_ = bus_read16(0xfffe) | (bus_read16(0xffff) << 8);
 	//manually set the cycle counts.
 	cycles_left_on_ins_ = 7;
 }
@@ -158,7 +157,7 @@ void CPU6502::nmi()
 	status_ &= ~flag_break;
 	status_ |= flag_interrupt;
 	status_ |= flag_constant;
-	pc_ = (uint16_t)bus_ptr_->read(0xfffa) | ((uint16_t)bus_ptr_->read(0xfffb) << 8);
+	pc_ = bus_read16(0xfffa) | (bus_read16(0xfffb) << 8);
 	//manually set the cycle counts.
 	cycles_left_on_ins_ = 8;
 
@@ -178,29 +177,29 @@ void CPU6502::imm()
 }
 void CPU6502::zp()
 {
-	addr_abs_ = bus_ptr_->read(pc_++);
+	addr_abs_ = bus_read8(pc_++);
 	addr_abs_ &= 0x00ff;
 }
 void CPU6502::zpx()
 {
-	addr_abs_ = bus_ptr_->read(pc_++) + x_;
+	addr_abs_ = bus_read8(pc_++) + x_;
 	addr_abs_ &= 0x00ff;
 }
 void CPU6502::zpy()
 {
-	addr_abs_ = bus_ptr_->read(pc_++) + y_;
+	addr_abs_ = bus_read8(pc_++) + y_;
 	addr_abs_ &= 0x00ff;
 }
 void CPU6502::abso()
 {
-	addr_abs_ = bus_ptr_->read(pc_++);
-	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+	addr_abs_ = bus_read8(pc_++);
+	addr_abs_ |= bus_read8(pc_++) << 8;
 }
 void CPU6502::absx()
 {
 	uint16_t	ori_page;
-	addr_abs_ = bus_ptr_->read(pc_++);
-	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+	addr_abs_ = bus_read8(pc_++);
+	addr_abs_ |= bus_read8(pc_++) << 8;
 	ori_page = addr_abs_ & 0xff00;
 	addr_abs_ += (uint16_t)x_;
 	ori_page != (addr_abs_ & 0xff00) ? penalty_addr_ = 1 : penalty_addr_ = 0;
@@ -208,40 +207,40 @@ void CPU6502::absx()
 void CPU6502::absy()
 {
 	uint16_t	ori_page;
-	addr_abs_ = bus_ptr_->read(pc_++);
-	addr_abs_ |= bus_ptr_->read(pc_++) << 8;
+	addr_abs_ = bus_read8(pc_++);
+	addr_abs_ |= bus_read8(pc_++) << 8;
 	ori_page = addr_abs_ & 0xff00;
 	addr_abs_ += (uint16_t)y_;
 	ori_page != (addr_abs_ & 0xff00) ? penalty_addr_ = 1 : penalty_addr_ = 0;
 }
 void CPU6502::rel()
 {
-	addr_rel_ = (uint16_t)bus_ptr_->read(pc_++);
+	addr_rel_ = bus_read16(pc_++);
 	if (addr_rel_ & 0x80) addr_rel_ |= 0xff00;
 }
 void CPU6502::ind()
 {
-	uint16_t ptr_lo = bus_ptr_->read(pc_++);
-	uint16_t ptr_hi = bus_ptr_->read(pc_++);
+	uint16_t ptr_lo = bus_read16(pc_++);
+	uint16_t ptr_hi = bus_read16(pc_++);
 	uint16_t ptr = ptr_hi << 8 | ptr_lo;
 	
 	if (0x00ff == ptr_lo) //hardware bug
-		addr_abs_ = bus_ptr_->read(ptr & 0xff00) << 8 | bus_ptr_->read(ptr);
+		addr_abs_ = bus_read16(ptr & 0xff00) << 8 | bus_read16(ptr);
 	else
-		addr_abs_ = bus_ptr_->read(ptr + 1) << 8 | bus_ptr_->read(ptr);
+		addr_abs_ = bus_read16(ptr + 1) << 8 | bus_read16(ptr);
 }
 void CPU6502::indx()
 {
-	uint16_t zp_loc = bus_ptr_->read(pc_++);
-	uint16_t ptr_lo = bus_ptr_->read((uint16_t)(zp_loc + (uint16_t)x_) & 0x00ff);
-	uint16_t ptr_hi = bus_ptr_->read((uint16_t)(zp_loc + (uint16_t)x_ + 1) & 0x00ff);
+	uint16_t zp_loc = bus_read16(pc_++);
+	uint16_t ptr_lo = bus_read16((uint16_t)(zp_loc + (uint16_t)x_) & 0x00ff);
+	uint16_t ptr_hi = bus_read16((uint16_t)(zp_loc + (uint16_t)x_ + 1) & 0x00ff);
 	addr_abs_ = (ptr_hi << 8) | ptr_lo;
 }
 void CPU6502::indy()
 {
-	uint16_t zp_loc = bus_ptr_->read(pc_++);
-	uint16_t ptr_lo = bus_ptr_->read(zp_loc & 0x00ff);
-	uint16_t ptr_hi = bus_ptr_->read((zp_loc + 1) & 0x00ff);
+	uint16_t zp_loc = bus_read16(pc_++);
+	uint16_t ptr_lo = bus_read16(zp_loc & 0x00ff);
+	uint16_t ptr_hi = bus_read16((zp_loc + 1) & 0x00ff);
 	addr_abs_ = ((ptr_hi << 8) | ptr_lo) + y_;
 	//cross page test
 	if ((ptr_hi << 8) != (addr_abs_ & 0xff00))
@@ -256,7 +255,11 @@ void CPU6502::adc()
 	uint8_t v = fetch();
 	uint16_t result = v + a_ + ((status_ & flag_carry) ? 1 : 0);
 	test_zero(result);
-	if (status_ & flag_decimal)
+	bool decimal_mode_enabled = false;
+#ifdef CPU_SUPPORT_DECIMAL
+	decimal_mode_enabled = true;
+#endif
+	if ((status_ & flag_decimal) && decimal_mode_enabled)
 	{
 		if (((a_ & 0xf) + (v & 0xf) + ((status_ & flag_carry) ? 1 : 0)) > 0x0009) result += 0x0006;
 		test_sign(result);
@@ -287,7 +290,11 @@ void CPU6502::sbc()
 	test_zero(result);
 	(((a_ ^ result) & 0x80) && ((a_ ^ v) & 0x80)) ? 
 		status_ |= flag_overflow : status_ &= ~flag_overflow;
-	if (status_ & flag_decimal)
+	bool decimal_mode_enabled = false;
+#ifdef CPU_SUPPORT_DECIMAL
+	decimal_mode_enabled = true;
+#endif
+	if ((status_ & flag_decimal) && decimal_mode_enabled)
 	{
 		if (((a_ & 0x0f) - ((status_ & flag_carry) ? 0 : 1)) < (v & 0x0f)) result -= 0x0006;
 		if (result > 0x99)
@@ -300,7 +307,7 @@ void CPU6502::sbc()
 	penalty_op_ = 1;
 }
 
-void CPU6502::and()
+void CPU6502::and_()
 {
 	uint8_t v = fetch();
 	a_ = a_ & v;
@@ -398,7 +405,7 @@ void CPU6502::brk()
 	push16(pc_);
 	push8(status_ | flag_break);
 	status_ |= flag_interrupt;
-	pc_ = (uint16_t)bus_ptr_->read(0xfffe) | ((uint16_t)bus_ptr_->read(0xffff) << 8);
+	pc_ = bus_read16(0xfffe) | (bus_read16(0xffff) << 8);
 }
 void CPU6502::bvc()
 {
@@ -730,7 +737,7 @@ void CPU6502::push8(uint8_t val)
 uint8_t CPU6502::pull8()
 {
 	assert(bus_ptr_);
-	return bus_ptr_->read(stack_base_addr_ + ++sp_);
+	return bus_read8(stack_base_addr_ + ++sp_);
 }
 void CPU6502::push16(uint16_t val)
 {
@@ -741,8 +748,8 @@ void CPU6502::push16(uint16_t val)
 uint16_t CPU6502::pull16()
 {
 	assert(bus_ptr_);
-	uint16_t val = bus_ptr_->read(stack_base_addr_ + ++sp_);
-	val |= ((uint16_t)bus_ptr_->read(stack_base_addr_ + ++sp_) & 0x00ff) << 8;
+	uint16_t val = bus_read16(stack_base_addr_ + ++sp_);
+	val |= (bus_read16(stack_base_addr_ + ++sp_) & 0x00ff) << 8;
 	return val;
 }
 
@@ -752,7 +759,7 @@ uint8_t CPU6502::fetch()
 		addr_table_[opcode_] == &a::imp)
 		return a_;
 	else
-		return bus_ptr_->read(addr_abs_);
+		return bus_read8(addr_abs_);
 }
 void  CPU6502::put(uint8_t val)
 {
@@ -761,6 +768,22 @@ void  CPU6502::put(uint8_t val)
 		a_ = val;
 	else
 		bus_ptr_->write(addr_abs_, val);
+}
+
+
+uint8_t CPU6502::bus_read8(uint16_t addr)
+{
+	uint8_t data;
+	bool succ = bus_ptr_->read(addr, data);
+	assert(succ);
+	return data;
+}
+uint16_t CPU6502::bus_read16(uint16_t addr)
+{
+	uint8_t data;
+	bool succ = bus_ptr_->read(addr, data);
+	assert(succ);
+	return (uint16_t)data;
 }
 
 char* CPU6502::cpu_status()

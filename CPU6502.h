@@ -5,7 +5,7 @@
 #include<cstdint>
 #include <string>
 #include "Bus.h"
-#define CPU_SUPPORT_DECIMAL 1
+//#define CPU_SUPPORT_DECIMAL 1
 //#define EMULATE_UNOFFICIAL_OP 1
 
 class Bus;
@@ -20,6 +20,20 @@ public:
 	void irq();
 	void nmi();
 	char* cpu_status();
+
+	//cpu registers
+	//flag for status : CZIDBUVN
+	enum :uint8_t
+	{
+		flag_carry = 0x01,
+		flag_zero = 0x02,
+		flag_interrupt = 0x04,
+		flag_decimal = 0x08,
+		flag_break = 0x10,
+		flag_constant = 0x20,
+		flag_overflow = 0x40,
+		flag_sign = 0x80,
+	};
 private:
 	//status
 	void test_zero(const uint16_t& result);
@@ -39,7 +53,7 @@ private:
 
 private:
 	//operations
-	void adc();	void and();	void asl();	void bcc();
+	void adc();	void and_();	void asl();	void bcc();
 	void bcs();	void beq();	void bit();	void bmi();
 	void bne();	void bpl();	void brk();	void bvc();
 	void bvs();	void clc();	void cld();	void cli();
@@ -57,7 +71,7 @@ private:
 	void sax();	void lax();	void dcp();	void isb();
 
 private:
-	//user op
+	//user op helpers
 	//stack ops
 	void push8(uint8_t val);
 	uint8_t pull8();
@@ -66,6 +80,9 @@ private:
 
 	uint8_t fetch();
 	void  put(uint8_t val);
+
+	uint8_t bus_read8(uint16_t addr);
+	uint16_t bus_read16(uint16_t addr);
 
 private:
 
@@ -95,23 +112,10 @@ private:
 	}
 
 
-private:
+public:
 	//config
 	uint16_t stack_base_addr_;
 
-	//cpu registers
-	//flag for status : CZIDBUVN
-	enum :uint8_t		
-	{
-		flag_carry = 0x01,
-		flag_zero = 0x02,
-		flag_interrupt = 0x04,
-		flag_decimal = 0x08,
-		flag_break = 0x10,
-		flag_constant = 0x20,
-		flag_overflow = 0x40,
-		flag_sign = 0x80,
-	};
 	uint16_t	pc_;	//program counter
 	uint8_t		sp_, a_, x_, y_, status_;
 
