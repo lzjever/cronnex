@@ -5,10 +5,6 @@
 
 Bus::Bus()
 {
-	cpu_ = std::make_shared<CPU6502>();
-	cpu_->connect(this);
-	ppu_ = std::make_shared<PPU2C02>();
-
 	dma_page_index_ = 0x00;
 	dma_inpage_addr_ = 0x00;
 	dma_data_on_transfer_ = 0x00;
@@ -33,7 +29,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF) //to ppu memory-mapped registers.
 	{
-		ppu_->cpuWrite(addr & 0x0007, data);
+		ppu_->register_write(addr, data);
 		return true;
 	}
 	else if (addr == 0x4014)
@@ -49,7 +45,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 	
 }
 
-bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
+bool Bus::read(uint16_t addr, uint8_t &data)
 {
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
@@ -64,22 +60,44 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF)
 	{
-		data = ppu_->cpuRead(addr & 0x0007, read_only);
-		return true;
+		return ppu_->register_read(addr, data);
 	}
 	else 
 	{
-		cart_->prg_read(addr, data);
-		return true;
+		return cart_->prg_read(addr, data);
 	}
 	return false;
 }
 
-void Bus::insert_cartridge(const std::shared_ptr<Cartridge>& cartridge)
+bool Bus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
 {
-	// Connects cartridge to both Main Bus and CPU Bus
+	if (!cartridge->is_valid())
+	{
+		return false;
+	}
 	this->cart_ = cartridge;
-	ppu_->ConnectCartridge(cartridge);
+	ppu_->connect_cartridge(this->cart_.get());
+	return true;
+}
+bool Bus::connect_cpu(std::shared_ptr<CPU6502> cpu)
+{
+	if (!cpu)
+	{
+		return false;
+	}
+	cpu_ = cpu;
+	cpu_->connect_bus(this);
+	return true;
+}
+bool Bus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
+{
+	if (!ppu)
+	{
+		return false;
+	}
+	ppu_ = ppu;
+	ppu_->connect_bus(this);
+	return true;
 }
 
 void Bus::reset()
@@ -108,7 +126,7 @@ bool Bus::dma()
 	}
 	else
 	{
-		ppu_->pOAM[dma_inpage_addr_++] = dma_data_on_transfer_;
+		((uint8_t*)ppu_->OAM_)[dma_inpage_addr_++] = dma_data_on_transfer_;
 		if (dma_inpage_addr_ == 0x00)
 		{
 			is_dma_mode_ = false;
@@ -120,6 +138,7 @@ bool Bus::dma()
 
 void Bus::clock()
 {
+	//todo: check cpu ppu cart
 	ppu_->clock();
 	if (total_cycles_ % 3 == 0)
 	{
@@ -128,9 +147,9 @@ void Bus::clock()
 			cpu_->clock();
 		}
 	}
-	if (ppu_->nmi)
+	if (ppu_->on_nmi_)
 	{
-		ppu_->nmi = false;
+		ppu_->on_nmi_ = false;
 		cpu_->nmi();
 	}
 	total_cycles_++;

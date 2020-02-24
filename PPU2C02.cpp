@@ -1,370 +1,147 @@
-﻿/*
-	olc::NES - Picture Processing Unit (PPU) 2C02
-	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
-	License (OLC-3)
-	~~~~~~~~~~~~~~~
-	Copyright 2018-2019 OneLoneCoder.com
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-	1. Redistributions or derivations of source code must retain the above
-	copyright notice, this list of conditions and the following disclaimer.
-	2. Redistributions or derivative works in binary form must reproduce
-	the above copyright notice. This list of conditions and the following
-	disclaimer must be reproduced in the documentation and/or other
-	materials provided with the distribution.
-	3. Neither the name of the copyright holder nor the names of its
-	contributors may be used to endorse or promote products derived
-	from this software without specific prior written permission.
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-	HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	Relevant Video: https://youtu.be/xdzOvpYPmGE
-	Links
-	~~~~~
-	YouTube:	https://www.youtube.com/javidx9
-				https://www.youtube.com/javidx9extra
-	Discord:	https://discord.gg/WhwHUMV
-	Twitter:	https://www.twitter.com/javidx9
-	Twitch:		https://www.twitch.tv/javidx9
-	GitHub:		https://www.github.com/onelonecoder
-	Patreon:	https://www.patreon.com/javidx9
-	Homepage:	https://www.onelonecoder.com
-	Author
-	~~~~~~
-	David Barr, aka javidx9, ©OneLoneCoder 2019
-*/
-#include <cstring>
+﻿#include <cstring>
 #include "PPU2C02.h"
 #include "Cartridge.h"
 PPU2C02::PPU2C02()
 {
-	palScreen[0x00] = olc::Pixel(84, 84, 84);
-	palScreen[0x01] = olc::Pixel(0, 30, 116);
-	palScreen[0x02] = olc::Pixel(8, 16, 144);
-	palScreen[0x03] = olc::Pixel(48, 0, 136);
-	palScreen[0x04] = olc::Pixel(68, 0, 100);
-	palScreen[0x05] = olc::Pixel(92, 0, 48);
-	palScreen[0x06] = olc::Pixel(84, 4, 0);
-	palScreen[0x07] = olc::Pixel(60, 24, 0);
-	palScreen[0x08] = olc::Pixel(32, 42, 0);
-	palScreen[0x09] = olc::Pixel(8, 58, 0);
-	palScreen[0x0A] = olc::Pixel(0, 64, 0);
-	palScreen[0x0B] = olc::Pixel(0, 60, 0);
-	palScreen[0x0C] = olc::Pixel(0, 50, 60);
-	palScreen[0x0D] = olc::Pixel(0, 0, 0);
-	palScreen[0x0E] = olc::Pixel(0, 0, 0);
-	palScreen[0x0F] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x00] = olc::Pixel(84, 84, 84);
+	pixel_colors_[0x01] = olc::Pixel(0, 30, 116);
+	pixel_colors_[0x02] = olc::Pixel(8, 16, 144);
+	pixel_colors_[0x03] = olc::Pixel(48, 0, 136);
+	pixel_colors_[0x04] = olc::Pixel(68, 0, 100);
+	pixel_colors_[0x05] = olc::Pixel(92, 0, 48);
+	pixel_colors_[0x06] = olc::Pixel(84, 4, 0);
+	pixel_colors_[0x07] = olc::Pixel(60, 24, 0);
+	pixel_colors_[0x08] = olc::Pixel(32, 42, 0);
+	pixel_colors_[0x09] = olc::Pixel(8, 58, 0);
+	pixel_colors_[0x0A] = olc::Pixel(0, 64, 0);
+	pixel_colors_[0x0B] = olc::Pixel(0, 60, 0);
+	pixel_colors_[0x0C] = olc::Pixel(0, 50, 60);
+	pixel_colors_[0x0D] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x0E] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x0F] = olc::Pixel(0, 0, 0);
 
-	palScreen[0x10] = olc::Pixel(152, 150, 152);
-	palScreen[0x11] = olc::Pixel(8, 76, 196);
-	palScreen[0x12] = olc::Pixel(48, 50, 236);
-	palScreen[0x13] = olc::Pixel(92, 30, 228);
-	palScreen[0x14] = olc::Pixel(136, 20, 176);
-	palScreen[0x15] = olc::Pixel(160, 20, 100);
-	palScreen[0x16] = olc::Pixel(152, 34, 32);
-	palScreen[0x17] = olc::Pixel(120, 60, 0);
-	palScreen[0x18] = olc::Pixel(84, 90, 0);
-	palScreen[0x19] = olc::Pixel(40, 114, 0);
-	palScreen[0x1A] = olc::Pixel(8, 124, 0);
-	palScreen[0x1B] = olc::Pixel(0, 118, 40);
-	palScreen[0x1C] = olc::Pixel(0, 102, 120);
-	palScreen[0x1D] = olc::Pixel(0, 0, 0);
-	palScreen[0x1E] = olc::Pixel(0, 0, 0);
-	palScreen[0x1F] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x10] = olc::Pixel(152, 150, 152);
+	pixel_colors_[0x11] = olc::Pixel(8, 76, 196);
+	pixel_colors_[0x12] = olc::Pixel(48, 50, 236);
+	pixel_colors_[0x13] = olc::Pixel(92, 30, 228);
+	pixel_colors_[0x14] = olc::Pixel(136, 20, 176);
+	pixel_colors_[0x15] = olc::Pixel(160, 20, 100);
+	pixel_colors_[0x16] = olc::Pixel(152, 34, 32);
+	pixel_colors_[0x17] = olc::Pixel(120, 60, 0);
+	pixel_colors_[0x18] = olc::Pixel(84, 90, 0);
+	pixel_colors_[0x19] = olc::Pixel(40, 114, 0);
+	pixel_colors_[0x1A] = olc::Pixel(8, 124, 0);
+	pixel_colors_[0x1B] = olc::Pixel(0, 118, 40);
+	pixel_colors_[0x1C] = olc::Pixel(0, 102, 120);
+	pixel_colors_[0x1D] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x1E] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x1F] = olc::Pixel(0, 0, 0);
 
-	palScreen[0x20] = olc::Pixel(236, 238, 236);
-	palScreen[0x21] = olc::Pixel(76, 154, 236);
-	palScreen[0x22] = olc::Pixel(120, 124, 236);
-	palScreen[0x23] = olc::Pixel(176, 98, 236);
-	palScreen[0x24] = olc::Pixel(228, 84, 236);
-	palScreen[0x25] = olc::Pixel(236, 88, 180);
-	palScreen[0x26] = olc::Pixel(236, 106, 100);
-	palScreen[0x27] = olc::Pixel(212, 136, 32);
-	palScreen[0x28] = olc::Pixel(160, 170, 0);
-	palScreen[0x29] = olc::Pixel(116, 196, 0);
-	palScreen[0x2A] = olc::Pixel(76, 208, 32);
-	palScreen[0x2B] = olc::Pixel(56, 204, 108);
-	palScreen[0x2C] = olc::Pixel(56, 180, 204);
-	palScreen[0x2D] = olc::Pixel(60, 60, 60);
-	palScreen[0x2E] = olc::Pixel(0, 0, 0);
-	palScreen[0x2F] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x20] = olc::Pixel(236, 238, 236);
+	pixel_colors_[0x21] = olc::Pixel(76, 154, 236);
+	pixel_colors_[0x22] = olc::Pixel(120, 124, 236);
+	pixel_colors_[0x23] = olc::Pixel(176, 98, 236);
+	pixel_colors_[0x24] = olc::Pixel(228, 84, 236);
+	pixel_colors_[0x25] = olc::Pixel(236, 88, 180);
+	pixel_colors_[0x26] = olc::Pixel(236, 106, 100);
+	pixel_colors_[0x27] = olc::Pixel(212, 136, 32);
+	pixel_colors_[0x28] = olc::Pixel(160, 170, 0);
+	pixel_colors_[0x29] = olc::Pixel(116, 196, 0);
+	pixel_colors_[0x2A] = olc::Pixel(76, 208, 32);
+	pixel_colors_[0x2B] = olc::Pixel(56, 204, 108);
+	pixel_colors_[0x2C] = olc::Pixel(56, 180, 204);
+	pixel_colors_[0x2D] = olc::Pixel(60, 60, 60);
+	pixel_colors_[0x2E] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x2F] = olc::Pixel(0, 0, 0);
 
-	palScreen[0x30] = olc::Pixel(236, 238, 236);
-	palScreen[0x31] = olc::Pixel(168, 204, 236);
-	palScreen[0x32] = olc::Pixel(188, 188, 236);
-	palScreen[0x33] = olc::Pixel(212, 178, 236);
-	palScreen[0x34] = olc::Pixel(236, 174, 236);
-	palScreen[0x35] = olc::Pixel(236, 174, 212);
-	palScreen[0x36] = olc::Pixel(236, 180, 176);
-	palScreen[0x37] = olc::Pixel(228, 196, 144);
-	palScreen[0x38] = olc::Pixel(204, 210, 120);
-	palScreen[0x39] = olc::Pixel(180, 222, 120);
-	palScreen[0x3A] = olc::Pixel(168, 226, 144);
-	palScreen[0x3B] = olc::Pixel(152, 226, 180);
-	palScreen[0x3C] = olc::Pixel(160, 214, 228);
-	palScreen[0x3D] = olc::Pixel(160, 162, 160);
-	palScreen[0x3E] = olc::Pixel(0, 0, 0);
-	palScreen[0x3F] = olc::Pixel(0, 0, 0);
-
+	pixel_colors_[0x30] = olc::Pixel(236, 238, 236);
+	pixel_colors_[0x31] = olc::Pixel(168, 204, 236);
+	pixel_colors_[0x32] = olc::Pixel(188, 188, 236);
+	pixel_colors_[0x33] = olc::Pixel(212, 178, 236);
+	pixel_colors_[0x34] = olc::Pixel(236, 174, 236);
+	pixel_colors_[0x35] = olc::Pixel(236, 174, 212);
+	pixel_colors_[0x36] = olc::Pixel(236, 180, 176);
+	pixel_colors_[0x37] = olc::Pixel(228, 196, 144);
+	pixel_colors_[0x38] = olc::Pixel(204, 210, 120);
+	pixel_colors_[0x39] = olc::Pixel(180, 222, 120);
+	pixel_colors_[0x3A] = olc::Pixel(168, 226, 144);
+	pixel_colors_[0x3B] = olc::Pixel(152, 226, 180);
+	pixel_colors_[0x3C] = olc::Pixel(160, 214, 228);
+	pixel_colors_[0x3D] = olc::Pixel(160, 162, 160);
+	pixel_colors_[0x3E] = olc::Pixel(0, 0, 0);
+	pixel_colors_[0x3F] = olc::Pixel(0, 0, 0);
 }
-
 
 PPU2C02::~PPU2C02()
 {
 }
 
-olc::Sprite& PPU2C02::GetScreen()
+olc::Sprite& PPU2C02::screen()
 {
-	// Simply returns the current sprite holding the rendered screen
-	return sprScreen;
+	return screen_;
 }
 
 
-
-olc::Sprite& PPU2C02::GetPatternTable(uint8_t i, uint8_t palette)
+olc::Pixel& PPU2C02::get_render_pixel(uint8_t palette, uint8_t pixel)
 {
-	// This function draw the CHR ROM for a given pattern table into
-	// an olc::Sprite, using a specified palette. Pattern tables consist
-	// of 16x16 "tiles or characters". It is independent of the running
-	// emulation and using it does not change the systems state, though
-	// it gets all the data it needs from the live system. Consequently,
-	// if the game has not yet established palettes or mapped to relevant
-	// CHR ROM banks, the sprite may look empty. This approach permits a 
-	// "live" extraction of the pattern table exactly how the NES, and 
-	// ultimately the player would see it.
+	uint8_t data = 0;
+	read(0x3F00 + (palette << 2) + pixel, data);
+	return pixel_colors_[data & 0x3F];
+}
 
-	// A tile consists of 8x8 pixels. On the NES, pixels are 2 bits, which
-	// gives an index into 4 different colours of a specific palette. There
-	// are 8 palettes to choose from. Colour "0" in each palette is effectively
-	// considered transparent, as those locations in memory "mirror" the global
-	// background colour being used. This mechanics of this are shown in 
-	// detail in ppuRead() & ppuWrite()
-
-	// Characters on NES
-	// ~~~~~~~~~~~~~~~~~
-	// The NES stores characters using 2-bit pixels. These are not stored sequentially
-	// but in singular bit planes. For example:
-	//
-	// 2-Bit Pixels       LSB Bit Plane     MSB Bit Plane
-	// 0 0 0 0 0 0 0 0	  0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0
-	// 0 1 1 0 0 1 1 0	  0 1 1 0 0 1 1 0   0 0 0 0 0 0 0 0
-	// 0 1 2 0 0 2 1 0	  0 1 1 0 0 1 1 0   0 0 1 0 0 1 0 0
-	// 0 0 0 0 0 0 0 0 =  0 0 0 0 0 0 0 0 + 0 0 0 0 0 0 0 0
-	// 0 1 1 0 0 1 1 0	  0 1 1 0 0 1 1 0   0 0 0 0 0 0 0 0
-	// 0 0 1 1 1 1 0 0	  0 0 1 1 1 1 0 0   0 0 0 0 0 0 0 0
-	// 0 0 0 2 2 0 0 0	  0 0 0 1 1 0 0 0   0 0 0 1 1 0 0 0
-	// 0 0 0 0 0 0 0 0	  0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0
-	//
-	// The planes are stored as 8 bytes of LSB, followed by 8 bytes of MSB
-
-	// Loop through all 16x16 tiles
-	for (uint16_t nTileY = 0; nTileY < 16; nTileY++)
+bool PPU2C02::register_read(uint16_t addr, uint8_t &data)
+{
+	//addr >= 0x2000 && addr <= 0x3FFF
+	addr = addr & 0x0007;	//all are mirrors of the first 8 bytes.
+	data = 0x00;
+	switch (addr)
 	{
-		for (uint16_t nTileX = 0; nTileX < 16; nTileX++)
-		{
-			// Convert the 2D tile coordinate into a 1D offset into the pattern
-			// table memory.
-			uint16_t nOffset = nTileY * 256 + nTileX * 16;
+	case 0x0000: break;
+	case 0x0001: break;
+	case 0x0002:
+		data = (status_.byte_ & 0xE0) | (ppu_data_buffer & 0x1F);
+		status_.vertical_blank = 0;
+		address_latch = 0;
+		break;
+	case 0x0003: break;
+	case 0x0004:
+		data = ((uint8_t*)OAM_)[oam_addr_];
+		break;
 
-			// Now loop through 8 rows of 8 pixels
-			for (uint16_t row = 0; row < 8; row++)
-			{
-				// For each row, we need to read both bit planes of the character
-				// in order to extract the least significant and most significant 
-				// bits of the 2 bit pixel value. in the CHR ROM, each character
-				// is stored as 64 bits of lsb, followed by 64 bits of msb. This
-				// conveniently means that two corresponding rows are always 8
-				// bytes apart in memory.
-				uint8_t tile_lsb = ppuRead(i * 0x1000 + nOffset + row + 0x0000);
-				uint8_t tile_msb = ppuRead(i * 0x1000 + nOffset + row + 0x0008);
-
-
-				// Now we have a single row of the two bit planes for the character
-				// we need to iterate through the 8-bit words, combining them to give
-				// us the final pixel index
-				for (uint16_t col = 0; col < 8; col++)
-				{
-					// We can get the index value by simply adding the bits together
-					// but we're only interested in the lsb of the row words because...
-					uint8_t pixel = (tile_lsb & 0x01) << 1 | (tile_msb & 0x01);
-
-					// ...we will shift the row words 1 bit right for each column of
-					// the character.
-					tile_lsb >>= 1; tile_msb >>= 1;
-
-					// Now we know the location and NES pixel value for a specific location
-					// in the pattern table, we can translate that to a screen colour, and an
-					// (x,y) location in the sprite
-					sprPatternTable[i].SetPixel
-					(
-						nTileX * 8 + (7 - col), // Because we are using the lsb of the row word first
-												// we are effectively reading the row from right
-												// to left, so we need to draw the row "backwards"
-						nTileY * 8 + row,
-						GetColourFromPaletteRam(palette, pixel)
-					);
-				}
-			}
-		}
+	case 0x0005: break;
+	case 0x0006: break;
+	case 0x0007:
+		data = ppu_data_buffer;
+		read(vram_addr.byte_, ppu_data_buffer);
+		if (vram_addr.byte_ >= 0x3F00) data = ppu_data_buffer;
+		vram_addr.byte_ += (control_.I ? 32 : 1);
+		break;
+	default:
+		return false;
 	}
-
-	// Finally return the updated sprite representing the pattern table
-	return sprPatternTable[i];
+	return true;
 }
 
-
-olc::Pixel& PPU2C02::GetColourFromPaletteRam(uint8_t palette, uint8_t pixel)
+bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 {
-	// This is a convenience function that takes a specified palette and pixel
-	// index and returns the appropriate screen colour.
-	// "0x3F00"       - Offset into PPU addressable range where palettes are stored
-	// "palette << 2" - Each palette is 4 bytes in size
-	// "pixel"        - Each pixel index is either 0, 1, 2 or 3
-	// "& 0x3F"       - Stops us reading beyond the bounds of the palScreen array
-	return palScreen[ppuRead(0x3F00 + (palette << 2) + pixel) & 0x3F];
-
-	// Note: We dont access tblPalette directly here, instead we know that ppuRead()
-	// will map the address onto the seperate small RAM attached to the PPU bus.
-}
-
-olc::Sprite& PPU2C02::GetNameTable(uint8_t i)
-{
-	// As of now unused, but a placeholder for nametable visualisation in teh future
-	return sprNameTable[i];
-}
-
-
-uint8_t PPU2C02::cpuRead(uint16_t addr, bool rdonly)
-{
-	uint8_t data = 0x00;
-
-	if (rdonly)
-	{
-		// Reading from PPU registers can affect their contents
-		// so this read only option is used for examining the
-		// state of the PPU without changing its state. This is
-		// really only used in debug mode.
-		switch (addr)
-		{
-		case 0x0000: // Control
-			data = control.reg;
-			break;
-		case 0x0001: // Mask
-			data = mask.reg;
-			break;
-		case 0x0002: // Status
-			data = status.reg;
-			break;
-		case 0x0003: // OAM Address
-			break;
-		case 0x0004: // OAM Data
-			break;
-		case 0x0005: // Scroll
-			break;
-		case 0x0006: // PPU Address
-			break;
-		case 0x0007: // PPU Data
-			break;
-		}
-	}
-	else
-	{
-		// These are the live PPU registers that repsond
-		// to being read from in various ways. Note that not
-		// all the registers are capable of being read from
-		// so they just return 0x00
-		switch (addr)
-		{
-			// Control - Not readable
-		case 0x0000: break;
-
-			// Mask - Not Readable
-		case 0x0001: break;
-
-			// Status
-		case 0x0002:
-			// Reading from the status register has the effect of resetting
-			// different parts of the circuit. Only the top three bits
-			// contain status information, however it is possible that
-			// some "noise" gets picked up on the bottom 5 bits which 
-			// represent the last PPU bus transaction. Some games "may"
-			// use this noise as valid data (even though they probably
-			// shouldn't)
-			data = (status.reg & 0xE0) | (ppu_data_buffer & 0x1F);
-
-			// Clear the vertical blanking flag
-			status.vertical_blank = 0;
-
-			// Reset Loopy's Address latch flag
-			address_latch = 0;
-			break;
-
-			// OAM Address - Not Readable
-		case 0x0003: break;
-
-			// OAM Data
-		case 0x0004:
-			data = pOAM[oam_addr];
-			break;
-
-			// Scroll - Not Readable
-		case 0x0005: break;
-
-			// PPU Address - Not Readable
-		case 0x0006: break;
-
-			// PPU Data
-		case 0x0007:
-			// Reads from the NameTable ram get delayed one cycle, 
-			// so output buffer which contains the data from the 
-			// previous read request
-			data = ppu_data_buffer;
-			// then update the buffer for next time
-			ppu_data_buffer = ppuRead(vram_addr.reg);
-			// However, if the address was in the palette range, the
-			// data is not delayed, so it returns immediately
-			if (vram_addr.reg >= 0x3F00) data = ppu_data_buffer;
-			// All reads from PPU data automatically increment the nametable
-			// address depending upon the mode set in the control register.
-			// If set to vertical mode, the increment is 32, so it skips
-			// one whole nametable row; in horizontal mode it just increments
-			// by 1, moving to the next column
-			vram_addr.reg += (control.increment_mode ? 32 : 1);
-			break;
-		}
-	}
-
-	return data;
-}
-
-void PPU2C02::cpuWrite(uint16_t addr, uint8_t data)
-{
+	//addr >= 0x2000 && addr <= 0x3FFF
+	addr = addr & 0x0007;	//all are mirrors of the first 8 bytes.
 	switch (addr)
 	{
 	case 0x0000: // Control
-		control.reg = data;
-		tram_addr.nametable_x = control.nametable_x;
-		tram_addr.nametable_y = control.nametable_y;
+		control_.byte_ = data;
+		tram_addr.NN = control_.NN;
 		break;
 	case 0x0001: // Mask
-		mask.reg = data;
+		mask_.byte_ = data;
 		break;
 	case 0x0002: // Status
 		break;
 	case 0x0003: // OAM Address
-		oam_addr = data;
+		oam_addr_ = data;
 		break;
 	case 0x0004: // OAM Data
-		pOAM[oam_addr] = data;
+		((uint8_t*)OAM_)[oam_addr_] = data;
 		break;
 	case 0x0005: // Scroll
 		if (address_latch == 0)
@@ -391,7 +168,7 @@ void PPU2C02::cpuWrite(uint16_t addr, uint8_t data)
 			// registers. The fisrt write to this register latches the high byte
 			// of the address, the second is the low byte. Note the writes
 			// are stored in the tram register...
-			tram_addr.reg = (uint16_t)((data & 0x3F) << 8) | (tram_addr.reg & 0x00FF);
+			tram_addr.byte_ = (uint16_t)((data & 0x3F) << 8) | (tram_addr.byte_ & 0x00FF);
 			address_latch = 1;
 		}
 		else
@@ -400,65 +177,68 @@ void PPU2C02::cpuWrite(uint16_t addr, uint8_t data)
 			// buffer is updated. Writing to the PPU is unwise during rendering
 			// as the PPU will maintam the vram address automatically whilst
 			// rendering the scanline position.
-			tram_addr.reg = (tram_addr.reg & 0xFF00) | data;
+			tram_addr.byte_ = (tram_addr.byte_ & 0xFF00) | data;
 			vram_addr = tram_addr;
 			address_latch = 0;
 		}
 		break;
 	case 0x0007: // PPU Data
-		ppuWrite(vram_addr.reg, data);
+		write(vram_addr.byte_, data);
 		// All writes from PPU data automatically increment the nametable
 		// address depending upon the mode set in the control register.
 		// If set to vertical mode, the increment is 32, so it skips
 		// one whole nametable row; in horizontal mode it just increments
 		// by 1, moving to the next column
-		vram_addr.reg += (control.increment_mode ? 32 : 1);
+		vram_addr.byte_ += (control_.I ? 32 : 1);
 		break;
+	default:
+		return false;
 	}
+	return true;
 }
 
-uint8_t PPU2C02::ppuRead(uint16_t addr, bool rdonly)
+bool PPU2C02::read(uint16_t addr, uint8_t &data)
 {
-	uint8_t data = 0x00;
+	data = 0x00;
 	addr &= 0x3FFF;
 
-	if (cart->chr_read(addr, data))
+	if (cart_ptr_->chr_read(addr, data))
 	{
-
+		// read from cart.
 	}
 	else if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		// If the cartridge cant map the address, have
 		// a physical location ready here
-		data = tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF];
+		data = pattern_table_[(addr & 0x1000) >> 12][addr & 0x0FFF];
 	}
 	else if (addr >= 0x2000 && addr <= 0x3EFF)
 	{
 		addr &= 0x0FFF;
 
-		if (cart->mirror_type_ == Cartridge::MIRROR::flag_vertical)
+		if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_vertical)
 		{
 			// Vertical
 			if (addr >= 0x0000 && addr <= 0x03FF)
-				data = tblName[0][addr & 0x03FF];
+				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0400 && addr <= 0x07FF)
-				data = tblName[1][addr & 0x03FF];
+				data = name_table_[1][addr & 0x03FF];
 			if (addr >= 0x0800 && addr <= 0x0BFF)
-				data = tblName[0][addr & 0x03FF];
+				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0C00 && addr <= 0x0FFF)
-				data = tblName[1][addr & 0x03FF];
+				data = name_table_[1][addr & 0x03FF];
 		}
-		else if (cart->mirror_type_ == Cartridge::MIRROR::flag_horizontal)
+		else if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_horizontal)
 		{
 			// Horizontal
 			if (addr >= 0x0000 && addr <= 0x03FF)
-				data = tblName[0][addr & 0x03FF];
+				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0400 && addr <= 0x07FF)
-				data = tblName[0][addr & 0x03FF];
+				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0800 && addr <= 0x0BFF)
-				data = tblName[1][addr & 0x03FF];
+				data = name_table_[1][addr & 0x03FF];
 			if (addr >= 0x0C00 && addr <= 0x0FFF)
-				data = tblName[1][addr & 0x03FF];
+				data = name_table_[1][addr & 0x03FF];
 		}
 	}
 	else if (addr >= 0x3F00 && addr <= 0x3FFF)
@@ -468,50 +248,53 @@ uint8_t PPU2C02::ppuRead(uint16_t addr, bool rdonly)
 		if (addr == 0x0014) addr = 0x0004;
 		if (addr == 0x0018) addr = 0x0008;
 		if (addr == 0x001C) addr = 0x000C;
-		data = tblPalette[addr] & (mask.grayscale ? 0x30 : 0x3F);
+		data = palette_table_[addr] & (mask_.grayscale ? 0x30 : 0x3F);
+	}
+	else
+	{
+		return false;
 	}
 
-	return data;
+	return true;
 }
 
-void PPU2C02::ppuWrite(uint16_t addr, uint8_t data)
+bool PPU2C02::write(uint16_t addr, uint8_t data)
 {
 	addr &= 0x3FFF;
-
-	if (cart->chr_write(addr, data))
+	if (cart_ptr_->chr_write(addr, data))
 	{
 
 	}
 	else if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
-		tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF] = data;
+		pattern_table_[(addr & 0x1000) >> 12][addr & 0x0FFF] = data;
 	}
 	else if (addr >= 0x2000 && addr <= 0x3EFF)
 	{
 		addr &= 0x0FFF;
-		if (cart->mirror_type_ == Cartridge::MIRROR::flag_vertical)
+		if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_vertical)
 		{
 			// Vertical
 			if (addr >= 0x0000 && addr <= 0x03FF)
-				tblName[0][addr & 0x03FF] = data;
+				name_table_[0][addr & 0x03FF] = data;
 			if (addr >= 0x0400 && addr <= 0x07FF)
-				tblName[1][addr & 0x03FF] = data;
+				name_table_[1][addr & 0x03FF] = data;
 			if (addr >= 0x0800 && addr <= 0x0BFF)
-				tblName[0][addr & 0x03FF] = data;
+				name_table_[0][addr & 0x03FF] = data;
 			if (addr >= 0x0C00 && addr <= 0x0FFF)
-				tblName[1][addr & 0x03FF] = data;
+				name_table_[1][addr & 0x03FF] = data;
 		}
-		else if (cart->mirror_type_ == Cartridge::MIRROR::flag_horizontal)
+		else if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_horizontal)
 		{
 			// Horizontal
 			if (addr >= 0x0000 && addr <= 0x03FF)
-				tblName[0][addr & 0x03FF] = data;
+				name_table_[0][addr & 0x03FF] = data;
 			if (addr >= 0x0400 && addr <= 0x07FF)
-				tblName[0][addr & 0x03FF] = data;
+				name_table_[0][addr & 0x03FF] = data;
 			if (addr >= 0x0800 && addr <= 0x0BFF)
-				tblName[1][addr & 0x03FF] = data;
+				name_table_[1][addr & 0x03FF] = data;
 			if (addr >= 0x0C00 && addr <= 0x0FFF)
-				tblName[1][addr & 0x03FF] = data;
+				name_table_[1][addr & 0x03FF] = data;
 		}
 	}
 	else if (addr >= 0x3F00 && addr <= 0x3FFF)
@@ -521,13 +304,13 @@ void PPU2C02::ppuWrite(uint16_t addr, uint8_t data)
 		if (addr == 0x0014) addr = 0x0004;
 		if (addr == 0x0018) addr = 0x0008;
 		if (addr == 0x001C) addr = 0x000C;
-		tblPalette[addr] = data;
+		palette_table_[addr] = data;
 	}
-}
-
-void PPU2C02::ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge)
-{
-	this->cart = cartridge;
+	else
+	{
+		return false;
+	}
+	return true;
 }
 
 void PPU2C02::reset()
@@ -545,11 +328,11 @@ void PPU2C02::reset()
 	bg_shifter_pattern_hi = 0x0000;
 	bg_shifter_attrib_lo = 0x0000;
 	bg_shifter_attrib_hi = 0x0000;
-	status.reg = 0x00;
-	mask.reg = 0x00;
-	control.reg = 0x00;
-	vram_addr.reg = 0x0000;
-	tram_addr.reg = 0x0000;
+	status_.byte_ = 0x00;
+	mask_.byte_ = 0x00;
+	control_.byte_ = 0x00;
+	vram_addr.byte_ = 0x0000;
+	tram_addr.byte_ = 0x0000;
 }
 
 void PPU2C02::clock()
@@ -572,7 +355,7 @@ void PPU2C02::clock()
 		// tiles, 8x8 pixel blocks.
 
 		// Ony if rendering is enabled
-		if (mask.render_background || mask.render_sprites)
+		if (mask_.render_background || mask_.render_sprites)
 		{
 			// A single name table is 32x30 tiles. As we increment horizontally
 			// we may cross into a neighbouring nametable, or wrap around to
@@ -582,7 +365,9 @@ void PPU2C02::clock()
 				// Leaving nametable so wrap address round
 				vram_addr.coarse_x = 0;
 				// Flip target nametable bit
-				vram_addr.nametable_x = ~vram_addr.nametable_x;
+				//X highest
+				//vram_addr.NN = ~vram_addr.nametable_x;
+				vram_addr.NN ^= 1;
 			}
 			else
 			{
@@ -610,7 +395,7 @@ void PPU2C02::clock()
 		// row offset, since fine_y is a value 0 to 7, and a row is 8 pixels high
 
 		// Ony if rendering is enabled
-		if (mask.render_background || mask.render_sprites)
+		if (mask_.render_background || mask_.render_sprites)
 		{
 			// If possible, just increment the fine y offset
 			if (vram_addr.fine_y < 7)
@@ -635,7 +420,9 @@ void PPU2C02::clock()
 					// We do, so reset coarse y offset
 					vram_addr.coarse_y = 0;
 					// And flip the target nametable bit
-					vram_addr.nametable_y = ~vram_addr.nametable_y;
+					//vram_addr.nametable_y = ~vram_addr.nametable_y;
+
+					vram_addr.NN ^= 2;
 				}
 				else if (vram_addr.coarse_y == 31)
 				{
@@ -660,9 +447,11 @@ void PPU2C02::clock()
 	auto TransferAddressX = [&]()
 	{
 		// Ony if rendering is enabled
-		if (mask.render_background || mask.render_sprites)
+		if (mask_.render_background || mask_.render_sprites)
 		{
-			vram_addr.nametable_x = tram_addr.nametable_x;
+			//vram_addr.nametable_x = tram_addr.nametable_x;
+
+			vram_addr.NN = (tram_addr.NN & 1) | (vram_addr.NN & 2);
 			vram_addr.coarse_x = tram_addr.coarse_x;
 		}
 	};
@@ -674,10 +463,12 @@ void PPU2C02::clock()
 	auto TransferAddressY = [&]()
 	{
 		// Ony if rendering is enabled
-		if (mask.render_background || mask.render_sprites)
+		if (mask_.render_background || mask_.render_sprites)
 		{
 			vram_addr.fine_y = tram_addr.fine_y;
-			vram_addr.nametable_y = tram_addr.nametable_y;
+			//vram_addr.nametable_y = tram_addr.nametable_y;
+
+			vram_addr.NN = (tram_addr.NN & 2) | (vram_addr.NN & 1);
 			vram_addr.coarse_y = tram_addr.coarse_y;
 		}
 	};
@@ -715,7 +506,7 @@ void PPU2C02::clock()
 	// with the pixels being drawn for that 8 pixel section of the scanline.
 	auto UpdateShifters = [&]()
 	{
-		if (mask.render_background)
+		if (mask_.render_background)
 		{
 			// Shifting background tile pattern row
 			bg_shifter_pattern_lo <<= 1;
@@ -726,7 +517,7 @@ void PPU2C02::clock()
 			bg_shifter_attrib_hi <<= 1;
 		}
 
-		if (mask.render_sprites && cycle >= 1 && cycle < 258)
+		if (mask_.render_sprites && cycle >= 1 && cycle < 258)
 		{
 			for (int i = 0; i < sprite_count; i++)
 			{
@@ -760,13 +551,13 @@ void PPU2C02::clock()
 		if (scanline == -1 && cycle == 1)
 		{
 			// Effectively start of new frame, so clear vertical blank flag
-			status.vertical_blank = 0;
+			status_.vertical_blank = 0;
 
 			// Clear sprite overflow flag
-			status.sprite_overflow = 0;
+			status_.sprite_overflow = 0;
 
 			// Clear the sprite zero hit flag
-			status.sprite_zero_hit = 0;
+			status_.sprite_zero_hit = 0;
 
 			// Clear Shifters
 			for (int i = 0; i < 8; i++)
@@ -797,9 +588,9 @@ void PPU2C02::clock()
 				LoadBackgroundShifters();
 
 				// Fetch the next background tile ID
-				// "(vram_addr.reg & 0x0FFF)" : Mask to 12 bits that are relevant
+				// "(vram_addr.byte_ & 0x0FFF)" : Mask to 12 bits that are relevant
 				// "| 0x2000"                 : Offset into nametable space on PPU address bus
-				bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
+				read(0x2000 | (vram_addr.byte_ & 0x0FFF), bg_next_tile_id);
 
 				// Explanation:
 				// The bottom 12 bits of the loopy register provide an index into
@@ -866,10 +657,10 @@ void PPU2C02::clock()
 				// All attribute memory begins at 0x03C0 within a nametable, so OR with
 				// result to select target nametable, and attribute byte offset. Finally
 				// OR with 0x2000 to offset into nametable address space on PPU bus.				
-				bg_next_tile_attrib = ppuRead(0x23C0 | (vram_addr.nametable_y << 11)
-					| (vram_addr.nametable_x << 10)
+				read(0x23C0 | (vram_addr.NN << 10)
+					//| (vram_addr.nametable_x << 10)
 					| ((vram_addr.coarse_y >> 2) << 3)
-					| (vram_addr.coarse_x >> 2));
+					| (vram_addr.coarse_x >> 2), bg_next_tile_attrib);
 
 				// Right we've read the correct attribute byte for a specified address,
 				// but the byte itself is broken down further into the 2x2 tile groups
@@ -919,17 +710,17 @@ void PPU2C02::clock()
 				//                                         vertical scroll offset
 				// "+ 0"                                 : Mental clarity for plane offset
 				// Note: No PPU address bus offset required as it starts at 0x0000
-				bg_next_tile_lsb = ppuRead((control.pattern_background << 12)
+				read((control_.B << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
-					+ (vram_addr.fine_y) + 0);
+					+ (vram_addr.fine_y) + 0, bg_next_tile_lsb);
 
 				break;
 			case 6:
 				// Fetch the next background tile MSB bit plane from the pattern memory
 				// This is the same as above, but has a +8 offset to select the next bit plane
-				bg_next_tile_msb = ppuRead((control.pattern_background << 12)
+				read((control_.B << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
-					+ (vram_addr.fine_y) + 8);
+					+ (vram_addr.fine_y) + 8, bg_next_tile_msb);
 				break;
 			case 7:
 				// Increment the background tile "pointer" to the next tile horizontally
@@ -956,7 +747,7 @@ void PPU2C02::clock()
 		// Superfluous reads of tile id at end of scanline
 		if (cycle == 338 || cycle == 340)
 		{
-			bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
+			read(0x2000 | (vram_addr.byte_ & 0x0FFF), bg_next_tile_id);
 		}
 
 		if (scanline == -1 && cycle >= 280 && cycle < 305)
@@ -981,7 +772,7 @@ void PPU2C02::clock()
 
 			// Firstly, clear out the sprite memory. This memory is used to store the
 			// sprites to be rendered. It is not the OAM.
-			std::memset(spriteScanline, 0xFF, 8 * sizeof(sObjectAttributeEntry));
+			std::memset(spriteScanline, 0xFF, 8 * sizeof(ObjectAttributeMemoryItem));
 
 			// The NES supports a maximum number of sprites per scanline. Nominally
 			// this is 8 or fewer sprites. This is why in some games you see sprites
@@ -1009,14 +800,14 @@ void PPU2C02::clock()
 			while (nOAMEntry < 64 && sprite_count < 9)
 			{
 				// Note the conversion to signed numbers here
-				int16_t diff = ((int16_t)scanline - (int16_t)OAM[nOAMEntry].y);
+				int16_t diff = ((int16_t)scanline - (int16_t)OAM_[nOAMEntry].y);
 
 				// If the difference is positive then the scanline is at least at the
 				// same height as the sprite, so check if it resides in the sprite vertically
 				// depending on the current "sprite height mode"
 				// FLAGGED
 
-				if (diff >= 0 && diff < (control.sprite_size ? 16 : 8))
+				if (diff >= 0 && diff < (control_.H ? 16 : 8))
 				{
 					// Sprite is visible, so copy the attribute entry over to our
 					// scanline sprite cache. Ive added < 8 here to guard the array
@@ -1031,7 +822,7 @@ void PPU2C02::clock()
 							bSpriteZeroHitPossible = true;
 						}
 
-						std::memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
+						std::memcpy(&spriteScanline[sprite_count], &OAM_[nOAMEntry], sizeof(ObjectAttributeMemoryItem));
 						sprite_count++;
 					}
 				}
@@ -1040,7 +831,7 @@ void PPU2C02::clock()
 			} // End of sprite evaluation for next scanline
 
 			// Set sprite overflow flag
-			status.sprite_overflow = (sprite_count > 8);
+			status_.sprite_overflow = (sprite_count > 8);
 
 			// Now we have an array of the 8 visible sprites for the next scanline. By 
 			// the nature of this search, they are also ranked in priority, because
@@ -1069,14 +860,14 @@ void PPU2C02::clock()
 				// Determine the memory addresses that contain the byte of pattern data. We
 				// only need the lo pattern address, because the hi pattern address is always
 				// offset by 8 from the lo address.
-				if (!control.sprite_size)
+				if (!control_.H)
 				{
 					// 8x8 Sprite Mode - The control register determines the pattern table
 					if (!(spriteScanline[i].attribute & 0x80))
 					{
 						// Sprite is NOT flipped vertically, i.e. normal    
 						sprite_pattern_addr_lo =
-							(control.pattern_sprite << 12)  // Which Pattern Table? 0KB or 4KB offset
+							(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
 							| (spriteScanline[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
 							| (scanline - spriteScanline[i].y); // Which Row in cell? (0->7)
 
@@ -1085,7 +876,7 @@ void PPU2C02::clock()
 					{
 						// Sprite is flipped vertically, i.e. upside down
 						sprite_pattern_addr_lo =
-							(control.pattern_sprite << 12)  // Which Pattern Table? 0KB or 4KB offset
+							(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
 							| (spriteScanline[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
 							| (7 - (scanline - spriteScanline[i].y)); // Which Row in cell? (7->0)
 					}
@@ -1145,8 +936,8 @@ void PPU2C02::clock()
 				sprite_pattern_addr_hi = sprite_pattern_addr_lo + 8;
 
 				// Now we have the address of the sprite patterns, we can read them
-				sprite_pattern_bits_lo = ppuRead(sprite_pattern_addr_lo);
-				sprite_pattern_bits_hi = ppuRead(sprite_pattern_addr_hi);
+				read(sprite_pattern_addr_lo, sprite_pattern_bits_lo);
+				read(sprite_pattern_addr_hi, sprite_pattern_bits_hi);
 
 				// If the sprite is flipped horizontally, we need to flip the 
 				// pattern bytes. 
@@ -1187,15 +978,15 @@ void PPU2C02::clock()
 		if (scanline == 241 && cycle == 1)
 		{
 			// Effectively end of frame, so set vertical blank flag
-			status.vertical_blank = 1;
+			status_.vertical_blank = 1;
 
 			// If the control register tells us to emit a NMI when
 			// entering vertical blanking period, do it! The CPU
 			// will be informed that rendering is complete so it can
 			// perform operations with the PPU knowing it wont
 			// produce visible artefacts
-			if (control.enable_nmi)
-				nmi = true;
+			if (control_.V)
+				on_nmi_ = true;
 		}
 	}
 
@@ -1211,7 +1002,7 @@ void PPU2C02::clock()
 	// background rendering is disabled, the pixel and palette combine
 	// to form 0x00. This will fall through the colour tables to yield
 	// the current background colour in effect
-	if (mask.render_background)
+	if (mask_.render_background)
 	{
 		// Handle Pixel Selection by selecting the relevant bit
 		// depending upon fine x scolling. This has the effect of
@@ -1238,7 +1029,7 @@ void PPU2C02::clock()
 	uint8_t fg_palette = 0x00; // The 3-bit index of the palette the pixel indexes
 	uint8_t fg_priority = 0x00;// A bit of the sprite attribute indicates if its
 							   // more important than the background
-	if (mask.render_sprites)
+	if (mask_.render_sprites)
 	{
 		// Iterate through all sprites for this scanline. This is to maintain
 		// sprite priority. As soon as we find a non transparent pixel of
@@ -1337,23 +1128,23 @@ void PPU2C02::clock()
 		{
 			// Sprite zero is a collision between foreground and background
 			// so they must both be enabled
-			if (mask.render_background & mask.render_sprites)
+			if (mask_.render_background & mask_.render_sprites)
 			{
 				// The left edge of the screen has specific switches to control
 				// its appearance. This is used to smooth inconsistencies when
 				// scrolling (since sprites x coord must be >= 0)
-				if (~(mask.render_background_left | mask.render_sprites_left))
+				if (~(mask_.render_background_left | mask_.render_sprites_left))
 				{
 					if (cycle >= 9 && cycle < 258)
 					{
-						status.sprite_zero_hit = 1;
+						status_.sprite_zero_hit = 1;
 					}
 				}
 				else
 				{
 					if (cycle >= 1 && cycle < 258)
 					{
-						status.sprite_zero_hit = 1;
+						status_.sprite_zero_hit = 1;
 					}
 				}
 			}
@@ -1362,7 +1153,7 @@ void PPU2C02::clock()
 
 	// Now we have a final pixel colour, and a palette for this cycle
 	// of the current scanline. Let's at long last, draw that ^&%*er :P
-	sprScreen.SetPixel(cycle - 1, scanline, GetColourFromPaletteRam(palette, pixel));
+	screen_.SetPixel(cycle - 1, scanline, get_render_pixel(palette, pixel));
 
 	// Advance renderer - it never stops, it's relentless
 	cycle++;
@@ -1373,7 +1164,7 @@ void PPU2C02::clock()
 		if (scanline >= 261)
 		{
 			scanline = -1;
-			frame_complete = true;
+			is_frame_complete_ = true;
 		}
 	}
 }

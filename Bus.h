@@ -9,17 +9,20 @@ class Bus
 public:
 	Bus();
 	~Bus();
-	void insert_cartridge(const std::shared_ptr<Cartridge>& cartridge);
+	bool insert_cartridge(std::shared_ptr<Cartridge> cartridge);
+	bool connect_cpu(std::shared_ptr<CPU6502> cpu);
+	bool connect_ppu(std::shared_ptr<PPU2C02> ppu);
+	
 	void reset();
 	void clock();
-	bool read(uint16_t addr, uint8_t &data, bool read_only = false);
+	bool read(uint16_t addr, uint8_t &data);
 	bool write(uint16_t addr, uint8_t data);
 	bool dma();
 
 public:
 
+	//bus holds all device instance.
 	std::shared_ptr<CPU6502> cpu_;
-
 	//the ppu exposes eight memory-mapped registers, $2000 through $2007,
 	//but because they're incompletely decoded, they're mirrored in every 8 bytes from $2008 through $3FFF
 	std::shared_ptr<PPU2C02> ppu_;		

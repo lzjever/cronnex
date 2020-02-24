@@ -14,7 +14,7 @@ class CPU6502
 public:
 	using a = CPU6502;
 	CPU6502(uint16_t stack_base_addr = 0x0100);
-	void connect(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
+	void connect_bus(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
 	void clock();
 	void reset();
 	void irq();
@@ -130,7 +130,7 @@ public:
 	uint8_t		penalty_op_, penalty_addr_;
 
 	//devices
-	Bus			*bus_ptr_;
+	Bus* bus_ptr_;
 
 private:
 	typedef void(CPU6502::* addr_ptr)(void);

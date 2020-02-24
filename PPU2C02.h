@@ -1,98 +1,50 @@
-﻿/*
-	olc::NES - Picture Processing Unit (PPU) 2C02
-	"Thanks Dad for believing computers were gonna be a big deal..." - javidx9
-	License (OLC-3)
-	~~~~~~~~~~~~~~~
-	Copyright 2018-2019 OneLoneCoder.com
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-	1. Redistributions or derivations of source code must retain the above
-	copyright notice, this list of conditions and the following disclaimer.
-	2. Redistributions or derivative works in binary form must reproduce
-	the above copyright notice. This list of conditions and the following
-	disclaimer must be reproduced in the documentation and/or other
-	materials provided with the distribution.
-	3. Neither the name of the copyright holder nor the names of its
-	contributors may be used to endorse or promote products derived
-	from this software without specific prior written permission.
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-	HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-	Relevant Video: https://youtu.be/-THeUXqR3zY
-	Links
-	~~~~~
-	YouTube:	https://www.youtube.com/javidx9
-				https://www.youtube.com/javidx9extra
-	Discord:	https://discord.gg/WhwHUMV
-	Twitter:	https://www.twitter.com/javidx9
-	Twitch:		https://www.twitch.tv/javidx9
-	GitHub:		https://www.github.com/onelonecoder
-	Patreon:	https://www.patreon.com/javidx9
-	Homepage:	https://www.onelonecoder.com
-	Author
-	~~~~~~
-	David Barr, aka javidx9, ©OneLoneCoder 2019
-*/
-
-#pragma once
+﻿#pragma once
 #include <cstdint>
 #include <memory>
 
 #include "olcPixelGameEngine.h"
 
 
+class Bus;
 class Cartridge;
 class PPU2C02
 {
 public:
 	PPU2C02();
 	~PPU2C02();
-
-private:
-	uint8_t     tblName[2][1024];
-	uint8_t     tblPattern[2][4096];
-	uint8_t		tblPalette[32];
-
-private:
-	olc::Pixel  palScreen[0x40];
-	olc::Sprite sprScreen = olc::Sprite(256, 240);
-	olc::Sprite sprNameTable[2] = { olc::Sprite(256, 240), olc::Sprite(256, 240) };
-	olc::Sprite sprPatternTable[2] = { olc::Sprite(128, 128), olc::Sprite(128, 128) };
-
+	olc::Sprite& screen();
+	olc::Pixel& get_render_pixel(uint8_t palette, uint8_t pixel);
+	bool is_frame_complete_ = false;
 public:
-	// Debugging Utilities
-	olc::Sprite& GetScreen();
-	olc::Sprite& GetNameTable(uint8_t i);
-	olc::Sprite& GetPatternTable(uint8_t i, uint8_t palette);
-
-	olc::Pixel& GetColourFromPaletteRam(uint8_t palette, uint8_t pixel);
-
-	bool frame_complete = false;
-
-private:
-
-	union
+	//registers
+	/*
+	PPUCTRL	$2000	VPHB SINN	NMI enable(V), PPU master / slave(P), sprite height(H), background tile select(B), sprite tile select(S), increment mode(I), nametable select(NN)
+	PPUMASK	$2001	BGRs bMmG	color emphasis(BGR), sprite enable(s), background enable(b), sprite left column enable(M), background left column enable(m), greyscale(G)
+	PPUSTATUS	$2002	VSO - ----vblank(V), sprite 0 hit(S), sprite overflow(O); read resets write pair for $2005 / $2006
+	OAMADDR	$2003	aaaa aaaa	OAM read / write address
+	OAMDATA	$2004	dddd dddd	OAM data read / write
+	PPUSCROLL	$2005	xxxx xxxx	fine scroll position(two writes : X scroll, Y scroll)
+	PPUADDR	$2006	aaaa aaaa	PPU read / write address(two writes : most significant byte, least significant byte)
+	PPUDATA	$2007	dddd dddd	PPU data read / write
+	OAMDMA	$4014	aaaa aaaa	OAM DMA high address
+	*/
+	union PPUCTRL
 	{
 		struct
 		{
-			uint8_t unused : 5;
-			uint8_t sprite_overflow : 1;
-			uint8_t sprite_zero_hit : 1;
-			uint8_t vertical_blank : 1;
+			//uint8_t nametable_x : 1;
+			//uint8_t nametable_y : 1;
+			uint8_t	NN	: 2;
+			uint8_t I : 1;
+			uint8_t S : 1;
+			uint8_t B : 1;
+			uint8_t H : 1;
+			uint8_t P : 1; // unused
+			uint8_t V : 1;
 		};
 
-		uint8_t reg;
-	} status;
-
+		uint8_t byte_;
+	} control_;
 
 	union
 	{
@@ -107,45 +59,39 @@ private:
 			uint8_t enhance_green : 1;
 			uint8_t enhance_blue : 1;
 		};
+		uint8_t byte_;
+	} mask_;
 
-		uint8_t reg;
-	} mask;
-
-	union PPUCTRL
+	union
 	{
 		struct
 		{
-			uint8_t nametable_x : 1;
-			uint8_t nametable_y : 1;
-			uint8_t increment_mode : 1;
-			uint8_t pattern_sprite : 1;
-			uint8_t pattern_background : 1;
-			uint8_t sprite_size : 1;
-			uint8_t slave_mode : 1; // unused
-			uint8_t enable_nmi : 1;
+			uint8_t unused : 5;
+			uint8_t sprite_overflow : 1;
+			uint8_t sprite_zero_hit : 1;
+			uint8_t vertical_blank : 1;
 		};
 
-		uint8_t reg;
-	} control;
+		uint8_t byte_;
+	} status_;
 
+	uint8_t oam_addr_ = 0x00;
+
+	//SCROLL
 	union loopy_register
 	{
-		// Credit to Loopy for working this out :D
 		struct
 		{
 
 			uint16_t coarse_x : 5;
 			uint16_t coarse_y : 5;
-			uint16_t nametable_x : 1;
-			uint16_t nametable_y : 1;
+			uint16_t NN : 2;
+			//uint16_t nametable_y : 1;
 			uint16_t fine_y : 3;
 			uint16_t unused : 1;
 		};
-
-		uint16_t reg = 0x0000;
+		uint16_t byte_ = 0x0000;
 	};
-
-
 	loopy_register vram_addr; // Active "pointer" address into nametable to extract background tile info
 	loopy_register tram_addr; // Temporary store of information to be "transferred" into "pointer" at various times
 
@@ -170,27 +116,26 @@ private:
 	uint16_t bg_shifter_attrib_lo = 0x0000;
 	uint16_t bg_shifter_attrib_hi = 0x0000;
 
+private:
+	uint8_t     name_table_[2][1024];
+	uint8_t     pattern_table_[2][4096];
+	uint8_t		palette_table_[32];
 
-	// Foreground "Sprite" rendering ================================
-	// The OAM is an additional memory internal to the PPU. It is
-	// not connected via the any bus. It stores the locations of
-	// 64off 8x8 (or 8x16) tiles to be drawn on the next frame.
-	struct sObjectAttributeEntry
+private:
+	olc::Pixel  pixel_colors_[64];
+	olc::Sprite screen_ = olc::Sprite(256, 240);
+
+public:
+	struct ObjectAttributeMemoryItem
 	{
 		uint8_t y;			// Y position of sprite
 		uint8_t id;			// ID of tile from pattern memory
 		uint8_t attribute;	// Flags define how sprite should be rendered
 		uint8_t x;			// X position of sprite
-	} OAM[64];
-
-	// A register to store the address when the CPU manually communicates
-	// with OAM via PPU registers. This is not commonly used because it 
-	// is very slow, and instead a 256-Byte DMA transfer is used. See
-	// the Bus header for a description of this.
-	uint8_t oam_addr = 0x00;
+	} OAM_[64];
 
 
-	sObjectAttributeEntry spriteScanline[8];
+	ObjectAttributeMemoryItem spriteScanline[8];
 	uint8_t sprite_count;
 	uint8_t sprite_shifter_pattern_lo[8];
 	uint8_t sprite_shifter_pattern_hi[8];
@@ -199,29 +144,21 @@ private:
 	bool bSpriteZeroHitPossible = false;
 	bool bSpriteZeroBeingRendered = false;
 
-	// The OAM is conveniently package above to work with, but the DMA
-	// mechanism will need access to it for writing one byute at a time
-public:
-	uint8_t* pOAM = (uint8_t*)OAM;
-
 
 public:
-	// Communications with Main Bus
-	uint8_t cpuRead(uint16_t addr, bool rdonly = false);
-	void    cpuWrite(uint16_t addr, uint8_t  data);
-
-	// Communications with PPU Bus
-	uint8_t ppuRead(uint16_t addr, bool rdonly = false);
-	void    ppuWrite(uint16_t addr, uint8_t data);
-
-private:
-	// The Cartridge or "GamePak"
-	std::shared_ptr<Cartridge> cart;
-
-public:
-	// Interface
-	void ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge);
+	void connect_bus(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
+	void connect_cartridge(Cartridge* cart) { cart_ptr_ = cart; }
 	void clock();
 	void reset();
-	bool nmi = false;
+
+	bool register_read(uint16_t addr, uint8_t &data);
+	bool register_write(uint16_t addr, uint8_t data);
+	//read, write cart,pattern_table,palette_table,name_table.
+	bool read(uint16_t addr, uint8_t& data);
+	bool write(uint16_t addr, uint8_t data);
+
+	bool on_nmi_ = false;
+	//devices
+	Bus* bus_ptr_;
+	Cartridge* cart_ptr_;
 };
