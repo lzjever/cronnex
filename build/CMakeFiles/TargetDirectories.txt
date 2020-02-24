@@ -1,3 +1,0 @@
-/home/lzjever/myworks/pcgt/build/CMakeFiles/rebuild_cache.dir
-/home/lzjever/myworks/pcgt/build/CMakeFiles/pcgt.dir
-/home/lzjever/myworks/pcgt/build/CMakeFiles/edit_cache.dir
