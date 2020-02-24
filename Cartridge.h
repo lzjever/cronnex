@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <string>
-#include <fstream>
 #include <vector>
+#include <memory>
 #include "Mapper_000.h"
 
 using namespace std;

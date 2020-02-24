@@ -1,4 +1,6 @@
 #include "Cartridge.h"
+#include <fstream>
+#include <cstring>
 
 Cartridge::Cartridge(const std::string& file_name)
 {
@@ -30,7 +32,7 @@ Cartridge::Cartridge(const std::string& file_name)
 		mirror_type_ = (header_.mapper1 & 0x01) ? flag_vertical : flag_horizontal;
 		uint8_t nFileType = 1;
 
-		if (memcmp(header_.name, "NES\x1a", 4) == 0) 
+		if (std::memcmp(header_.name, "NES\x1a", 4) == 0) 
 		{
 			prg_banks_num_ = header_.prg_rom_chunks;
 			grp_memory_.resize(prg_banks_num_ * 16384);

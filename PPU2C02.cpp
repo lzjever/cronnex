@@ -42,7 +42,7 @@
 	~~~~~~
 	David Barr, aka javidx9, ©OneLoneCoder 2019
 */
-
+#include <cstring>
 #include "PPU2C02.h"
 #include "Cartridge.h"
 PPU2C02::PPU2C02()
@@ -1031,7 +1031,7 @@ void PPU2C02::clock()
 							bSpriteZeroHitPossible = true;
 						}
 
-						memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
+						std::memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
 						sprite_count++;
 					}
 				}

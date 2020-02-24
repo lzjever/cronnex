@@ -111,7 +111,8 @@ private:
 		//Donkey Kong (JU).nes
 		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\nestest.nes");
 		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Donkey Kong (JU).nes");
-		cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Ice Climber (JE).nes");
+		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Ice Climber (JE).nes");
+		cart = std::make_shared<Cartridge>("../test_bin/Ice Climber (JE).nes");
 		
 		if (!cart->is_valid())
 			return false;
@@ -207,7 +208,7 @@ private:
 
 
 
-
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, char*, int cmdShow)
 {
 	PCGT_Program demo;
@@ -215,8 +216,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char*, int cmdShow)
 	demo.Start();
 	return 0;
 }
-
-/*
+#else
 int main()
 {
 	PCGT_Program demo;
@@ -224,4 +224,4 @@ int main()
 	demo.Start();
 	return 0;
 }
-*/
+#endif

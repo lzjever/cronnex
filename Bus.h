@@ -12,7 +12,7 @@ public:
 	void insert_cartridge(const std::shared_ptr<Cartridge>& cartridge);
 	void reset();
 	void clock();
-	bool read(uint16_t addr, uint8_t &data, bool bReadOnly = false);
+	bool read(uint16_t addr, uint8_t &data, bool read_only = false);
 	bool write(uint16_t addr, uint8_t data);
 	bool dma();
 

@@ -49,7 +49,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 	
 }
 
-bool Bus::read(uint16_t addr, uint8_t &data, bool bReadOnly)
+bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 {
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
@@ -64,7 +64,7 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool bReadOnly)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF)
 	{
-		data = ppu_->cpuRead(addr & 0x0007, bReadOnly);
+		data = ppu_->cpuRead(addr & 0x0007, read_only);
 		return true;
 	}
 	else 

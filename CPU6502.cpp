@@ -789,7 +789,7 @@ uint16_t CPU6502::bus_read16(uint16_t addr)
 char* CPU6502::cpu_status()
 {
 	cpu_status_buffer_[511] = 0x00;
-	snprintf(cpu_status_buffer_,511, "%10llu:%10llu # PC:%04X A:%02X X:%02X Y:%02X %s%s%s%s%s%s%s%s sp:%02X\n",
+	snprintf(cpu_status_buffer_,511, "%10lu:%10lu # PC:%04X A:%02X X:%02X Y:%02X %s%s%s%s%s%s%s%s sp:%02X\n",
 		total_cycles_, total_instructions_, pc_,  a_, x_, y_,
 		status_ & flag_sign ? "N" : ".", status_ & flag_overflow ? "V" : ".", status_ & flag_constant ? "U" : ".",
 		status_ & flag_break ? "B" : ".", status_ & flag_decimal ? "D" : ".", status_ & flag_interrupt ? "I" : ".",

@@ -261,15 +261,10 @@ namespace _gfs = std::experimental::filesystem::v1;
 #endif
 
 #if defined(__linux__) || defined(__MINGW32__)
-#if __cplusplus >= 201703L
-// C++17 onwards
-#include <filesystem>
-namespace _gfs = std::filesystem;
-#else
-// Older "Modern" C++ :P
-#include <experimental/filesystem>
-namespace _gfs = std::experimental::filesystem::v1;
-#endif
+
+#include <boost/filesystem.hpp>
+namespace _gfs = boost::filesystem;
+
 #endif
 
 #undef min
