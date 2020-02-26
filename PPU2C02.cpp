@@ -100,7 +100,7 @@ bool PPU2C02::register_read(uint16_t addr, uint8_t &data)
 	case 0x0001: break;
 	case 0x0002:
 		data = (status_.byte_ & 0xE0) | (ppu_data_buffer & 0x1F);
-		status_.vertical_blank = 0;
+		status_.V = 0;
 		address_latch = 0;
 		break;
 	case 0x0003: break;
@@ -248,7 +248,7 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 		if (addr == 0x0014) addr = 0x0004;
 		if (addr == 0x0018) addr = 0x0008;
 		if (addr == 0x001C) addr = 0x000C;
-		data = palette_table_[addr] & (mask_.grayscale ? 0x30 : 0x3F);
+		data = palette_table_[addr] & (mask_.G ? 0x30 : 0x3F);
 	}
 	else
 	{
@@ -355,7 +355,7 @@ void PPU2C02::clock()
 		// tiles, 8x8 pixel blocks.
 
 		// Ony if rendering is enabled
-		if (mask_.render_background || mask_.render_sprites)
+		if (mask_.b || mask_.s)
 		{
 			// A single name table is 32x30 tiles. As we increment horizontally
 			// we may cross into a neighbouring nametable, or wrap around to
@@ -364,9 +364,6 @@ void PPU2C02::clock()
 			{
 				// Leaving nametable so wrap address round
 				vram_addr.coarse_x = 0;
-				// Flip target nametable bit
-				//X highest
-				//vram_addr.NN = ~vram_addr.nametable_x;
 				vram_addr.NN ^= 1;
 			}
 			else
@@ -395,7 +392,7 @@ void PPU2C02::clock()
 		// row offset, since fine_y is a value 0 to 7, and a row is 8 pixels high
 
 		// Ony if rendering is enabled
-		if (mask_.render_background || mask_.render_sprites)
+		if (mask_.b || mask_.s)
 		{
 			// If possible, just increment the fine y offset
 			if (vram_addr.fine_y < 7)
@@ -419,9 +416,6 @@ void PPU2C02::clock()
 				{
 					// We do, so reset coarse y offset
 					vram_addr.coarse_y = 0;
-					// And flip the target nametable bit
-					//vram_addr.nametable_y = ~vram_addr.nametable_y;
-
 					vram_addr.NN ^= 2;
 				}
 				else if (vram_addr.coarse_y == 31)
@@ -447,10 +441,8 @@ void PPU2C02::clock()
 	auto TransferAddressX = [&]()
 	{
 		// Ony if rendering is enabled
-		if (mask_.render_background || mask_.render_sprites)
+		if (mask_.b || mask_.s)
 		{
-			//vram_addr.nametable_x = tram_addr.nametable_x;
-
 			vram_addr.NN = (tram_addr.NN & 1) | (vram_addr.NN & 2);
 			vram_addr.coarse_x = tram_addr.coarse_x;
 		}
@@ -463,11 +455,9 @@ void PPU2C02::clock()
 	auto TransferAddressY = [&]()
 	{
 		// Ony if rendering is enabled
-		if (mask_.render_background || mask_.render_sprites)
+		if (mask_.b || mask_.s)
 		{
 			vram_addr.fine_y = tram_addr.fine_y;
-			//vram_addr.nametable_y = tram_addr.nametable_y;
-
 			vram_addr.NN = (tram_addr.NN & 2) | (vram_addr.NN & 1);
 			vram_addr.coarse_y = tram_addr.coarse_y;
 		}
@@ -506,7 +496,7 @@ void PPU2C02::clock()
 	// with the pixels being drawn for that 8 pixel section of the scanline.
 	auto UpdateShifters = [&]()
 	{
-		if (mask_.render_background)
+		if (mask_.b)
 		{
 			// Shifting background tile pattern row
 			bg_shifter_pattern_lo <<= 1;
@@ -517,7 +507,7 @@ void PPU2C02::clock()
 			bg_shifter_attrib_hi <<= 1;
 		}
 
-		if (mask_.render_sprites && cycle >= 1 && cycle < 258)
+		if (mask_.s && cycle >= 1 && cycle < 258)
 		{
 			for (int i = 0; i < sprite_count; i++)
 			{
@@ -551,13 +541,13 @@ void PPU2C02::clock()
 		if (scanline == -1 && cycle == 1)
 		{
 			// Effectively start of new frame, so clear vertical blank flag
-			status_.vertical_blank = 0;
+			status_.V = 0;
 
 			// Clear sprite overflow flag
-			status_.sprite_overflow = 0;
+			status_.O = 0;
 
 			// Clear the sprite zero hit flag
-			status_.sprite_zero_hit = 0;
+			status_.S = 0;
 
 			// Clear Shifters
 			for (int i = 0; i < 8; i++)
@@ -658,7 +648,6 @@ void PPU2C02::clock()
 				// result to select target nametable, and attribute byte offset. Finally
 				// OR with 0x2000 to offset into nametable address space on PPU bus.				
 				read(0x23C0 | (vram_addr.NN << 10)
-					//| (vram_addr.nametable_x << 10)
 					| ((vram_addr.coarse_y >> 2) << 3)
 					| (vram_addr.coarse_x >> 2), bg_next_tile_attrib);
 
@@ -831,7 +820,7 @@ void PPU2C02::clock()
 			} // End of sprite evaluation for next scanline
 
 			// Set sprite overflow flag
-			status_.sprite_overflow = (sprite_count > 8);
+			status_.O = (sprite_count > 8);
 
 			// Now we have an array of the 8 visible sprites for the next scanline. By 
 			// the nature of this search, they are also ranked in priority, because
@@ -978,7 +967,7 @@ void PPU2C02::clock()
 		if (scanline == 241 && cycle == 1)
 		{
 			// Effectively end of frame, so set vertical blank flag
-			status_.vertical_blank = 1;
+			status_.V = 1;
 
 			// If the control register tells us to emit a NMI when
 			// entering vertical blanking period, do it! The CPU
@@ -1002,7 +991,7 @@ void PPU2C02::clock()
 	// background rendering is disabled, the pixel and palette combine
 	// to form 0x00. This will fall through the colour tables to yield
 	// the current background colour in effect
-	if (mask_.render_background)
+	if (mask_.b)
 	{
 		// Handle Pixel Selection by selecting the relevant bit
 		// depending upon fine x scolling. This has the effect of
@@ -1029,7 +1018,7 @@ void PPU2C02::clock()
 	uint8_t fg_palette = 0x00; // The 3-bit index of the palette the pixel indexes
 	uint8_t fg_priority = 0x00;// A bit of the sprite attribute indicates if its
 							   // more important than the background
-	if (mask_.render_sprites)
+	if (mask_.s)
 	{
 		// Iterate through all sprites for this scanline. This is to maintain
 		// sprite priority. As soon as we find a non transparent pixel of
@@ -1128,23 +1117,23 @@ void PPU2C02::clock()
 		{
 			// Sprite zero is a collision between foreground and background
 			// so they must both be enabled
-			if (mask_.render_background & mask_.render_sprites)
+			if (mask_.b & mask_.s)
 			{
 				// The left edge of the screen has specific switches to control
 				// its appearance. This is used to smooth inconsistencies when
 				// scrolling (since sprites x coord must be >= 0)
-				if (~(mask_.render_background_left | mask_.render_sprites_left))
+				if (~(mask_.m | mask_.M))
 				{
 					if (cycle >= 9 && cycle < 258)
 					{
-						status_.sprite_zero_hit = 1;
+						status_.S = 1;
 					}
 				}
 				else
 				{
 					if (cycle >= 1 && cycle < 258)
 					{
-						status_.sprite_zero_hit = 1;
+						status_.S = 1;
 					}
 				}
 			}

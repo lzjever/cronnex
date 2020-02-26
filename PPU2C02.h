@@ -32,15 +32,13 @@ public:
 	{
 		struct
 		{
-			//uint8_t nametable_x : 1;
-			//uint8_t nametable_y : 1;
-			uint8_t	NN	: 2;
-			uint8_t I : 1;
-			uint8_t S : 1;
-			uint8_t B : 1;
-			uint8_t H : 1;
-			uint8_t P : 1; // unused
-			uint8_t V : 1;
+			uint8_t	NN: 2;
+			uint8_t I: 1;
+			uint8_t S: 1;
+			uint8_t B: 1;
+			uint8_t H: 1;
+			uint8_t P: 1;
+			uint8_t V: 1;
 		};
 
 		uint8_t byte_;
@@ -50,14 +48,12 @@ public:
 	{
 		struct
 		{
-			uint8_t grayscale : 1;
-			uint8_t render_background_left : 1;
-			uint8_t render_sprites_left : 1;
-			uint8_t render_background : 1;
-			uint8_t render_sprites : 1;
-			uint8_t enhance_red : 1;
-			uint8_t enhance_green : 1;
-			uint8_t enhance_blue : 1;
+			uint8_t G: 1;
+			uint8_t m: 1;
+			uint8_t M: 1;
+			uint8_t b: 1;
+			uint8_t s: 1;
+			uint8_t BGR: 3;
 		};
 		uint8_t byte_;
 	} mask_;
@@ -67,9 +63,9 @@ public:
 		struct
 		{
 			uint8_t unused : 5;
-			uint8_t sprite_overflow : 1;
-			uint8_t sprite_zero_hit : 1;
-			uint8_t vertical_blank : 1;
+			uint8_t O : 1;
+			uint8_t S : 1;
+			uint8_t V : 1;
 		};
 
 		uint8_t byte_;
@@ -86,7 +82,6 @@ public:
 			uint16_t coarse_x : 5;
 			uint16_t coarse_y : 5;
 			uint16_t NN : 2;
-			//uint16_t nametable_y : 1;
 			uint16_t fine_y : 3;
 			uint16_t unused : 1;
 		};
@@ -126,12 +121,23 @@ private:
 	olc::Sprite screen_ = olc::Sprite(256, 240);
 
 public:
+	//http://wiki.nesdev.com/w/index.php/PPU_OAM
 	struct ObjectAttributeMemoryItem
 	{
-		uint8_t y;			// Y position of sprite
-		uint8_t id;			// ID of tile from pattern memory
-		uint8_t attribute;	// Flags define how sprite should be rendered
-		uint8_t x;			// X position of sprite
+		uint8_t y;			// Y position of top of sprite 
+		uint8_t id;			// Tile index number 
+
+		/* attribute
+		76543210
+		||||||||
+		||||||++- Palette (4 to 7) of sprite
+		|||+++--- Unimplemented
+		||+------ Priority (0: in front of background; 1: behind background)
+		|+------- Flip sprite horizontally
+		+-------- Flip sprite vertically
+		*/
+		uint8_t attribute;
+		uint8_t x;			// X position of left side of sprite.
 	} OAM_[64];
 
 
