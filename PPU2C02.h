@@ -73,7 +73,7 @@ public:
 
 
 	//SCROLL
-	union loopy_register
+	union LOOPY_REG
 	{
 		struct
 		{
@@ -86,8 +86,8 @@ public:
 		};
 		uint16_t byte_ = 0x0000;
 	};
-	loopy_register vram_addr; // Active "pointer" address into nametable to extract background tile info
-	loopy_register tram_addr; // Temporary store of information to be "transferred" into "pointer" at various times
+	LOOPY_REG loopy_v_; // Active "pointer" address into nametable to extract background tile info
+	LOOPY_REG loopy_t_; // Temporary store of information to be "transferred" into "pointer" at various times
 
 	// Pixel offset horizontally
 	uint8_t fine_x = 0x00;
@@ -159,7 +159,9 @@ public:
 
 	bool register_read(uint16_t addr, uint8_t &data);
 	bool register_write(uint16_t addr, uint8_t data);
+
 	//read, write cart,pattern_table,palette_table,name_table.
+	uint16_t unmirror_nametable(uint16_t addr, uint8_t mirror);
 	bool read(uint16_t addr, uint8_t& data);
 	bool write(uint16_t addr, uint8_t data);
 

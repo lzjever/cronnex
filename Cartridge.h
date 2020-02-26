@@ -16,7 +16,7 @@ public:
 public:
 	bool is_valid();
 
-	enum MIRROR
+	enum MIRROR : uint8_t
 	{
 		flag_horizontal,
 		flag_vertical

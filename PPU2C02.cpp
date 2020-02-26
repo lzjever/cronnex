@@ -112,9 +112,9 @@ bool PPU2C02::register_read(uint16_t addr, uint8_t &data)
 	case 0x0006: break;
 	case 0x0007:
 		data = ppu_data_buffer;
-		read(vram_addr.byte_, ppu_data_buffer);
-		if (vram_addr.byte_ >= 0x3F00) data = ppu_data_buffer;
-		vram_addr.byte_ += (control_.I ? 32 : 1);
+		read(loopy_v_.byte_, ppu_data_buffer);
+		if (loopy_v_.byte_ >= 0x3F00) data = ppu_data_buffer;
+		loopy_v_.byte_ += (control_.I ? 32 : 1);
 		break;
 	default:
 		return false;
@@ -130,7 +130,7 @@ bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 	{
 	case 0x0000: // Control
 		control_.byte_ = data;
-		tram_addr.NN = control_.NN;
+		loopy_t_.NN = control_.NN;
 		break;
 	case 0x0001: // Mask
 		mask_.byte_ = data;
@@ -146,50 +146,33 @@ bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 	case 0x0005: // Scroll
 		if (address_latch == 0)
 		{
-			// First write to scroll register contains X offset in pixel space
-			// which we split into coarse and fine x values
 			fine_x = data & 0x07;
-			tram_addr.coarse_x = data >> 3;
+			loopy_t_.coarse_x = data >> 3;
 			address_latch = 1;
 		}
 		else
 		{
-			// First write to scroll register contains Y offset in pixel space
-			// which we split into coarse and fine Y values
-			tram_addr.fine_y = data & 0x07;
-			tram_addr.coarse_y = data >> 3;
+			loopy_t_.fine_y = data & 0x07;
+			loopy_t_.coarse_y = data >> 3;
 			address_latch = 0;
 		}
 		break;
 	case 0x0006: // PPU Address
 		if (address_latch == 0)
 		{
-			// PPU address bus can be accessed by CPU via the ADDR and DATA
-			// registers. The fisrt write to this register latches the high byte
-			// of the address, the second is the low byte. Note the writes
-			// are stored in the tram register...
-			tram_addr.byte_ = (uint16_t)((data & 0x3F) << 8) | (tram_addr.byte_ & 0x00FF);
+			loopy_t_.byte_ = (uint16_t)((data & 0x3F) << 8) | (loopy_t_.byte_ & 0x00FF);
 			address_latch = 1;
 		}
 		else
 		{
-			// ...when a whole address has been written, the internal vram address
-			// buffer is updated. Writing to the PPU is unwise during rendering
-			// as the PPU will maintam the vram address automatically whilst
-			// rendering the scanline position.
-			tram_addr.byte_ = (tram_addr.byte_ & 0xFF00) | data;
-			vram_addr = tram_addr;
+			loopy_t_.byte_ = (loopy_t_.byte_ & 0xFF00) | data;
+			loopy_v_ = loopy_t_;
 			address_latch = 0;
 		}
 		break;
-	case 0x0007: // PPU Data
-		write(vram_addr.byte_, data);
-		// All writes from PPU data automatically increment the nametable
-		// address depending upon the mode set in the control register.
-		// If set to vertical mode, the increment is 32, so it skips
-		// one whole nametable row; in horizontal mode it just increments
-		// by 1, moving to the next column
-		vram_addr.byte_ += (control_.I ? 32 : 1);
+	case 0x0007: 
+		write(loopy_v_.byte_, data);
+		loopy_v_.byte_ += (control_.I ? 32 : 1);
 		break;
 	default:
 		return false;
@@ -197,10 +180,44 @@ bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 	return true;
 }
 
+
+uint16_t PPU2C02::unmirror_nametable(uint16_t addr, uint8_t mirror)
+{
+    switch (mirror)
+    {
+        case Cartridge::MIRROR::flag_vertical:    return addr % 0x800;
+        case Cartridge::MIRROR::flag_horizontal:  return ((addr / 2) & 0x400) + (addr % 0x400);
+        default:
+        	return addr - 0x2000;
+    }
+    //impossible to return from here.
+}
+
 bool PPU2C02::read(uint16_t addr, uint8_t &data)
 {
 	data = 0x00;
 	addr &= 0x3FFF;
+	(uint8_t)cart_ptr_->mirror_type_ ;
+
+	uint8_t *name_table_ptr = &(name_table_[0][0]);
+	switch (addr)
+    {
+        case 0x0000 ... 0x1FFF:  return cart_ptr_->chr_read(addr, data);  // CHR-ROM/RAM.
+        case 0x2000 ... 0x3EFF:  data = name_table_ptr[unmirror_nametable(addr,(uint8_t)cart_ptr_->mirror_type_ ) ] ; break;        // Nametables.
+        case 0x3F00 ... 0x3FFF:
+        {
+            if ((addr & 0x13) == 0x10) addr &= ~0x10;
+            	data = palette_table_[addr & 0x1F] & (mask_.G ? 0x30 : 0xFF);
+
+        }break;
+
+        default: 
+        	return false;
+    }
+    return true;
+
+
+/*
 
 	if (cart_ptr_->chr_read(addr, data))
 	{
@@ -208,8 +225,6 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 	}
 	else if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
-		// If the cartridge cant map the address, have
-		// a physical location ready here
 		data = pattern_table_[(addr & 0x1000) >> 12][addr & 0x0FFF];
 	}
 	else if (addr >= 0x2000 && addr <= 0x3EFF)
@@ -218,7 +233,6 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 
 		if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_vertical)
 		{
-			// Vertical
 			if (addr >= 0x0000 && addr <= 0x03FF)
 				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0400 && addr <= 0x07FF)
@@ -230,7 +244,6 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 		}
 		else if (cart_ptr_->mirror_type_ == Cartridge::MIRROR::flag_horizontal)
 		{
-			// Horizontal
 			if (addr >= 0x0000 && addr <= 0x03FF)
 				data = name_table_[0][addr & 0x03FF];
 			if (addr >= 0x0400 && addr <= 0x07FF)
@@ -254,8 +267,8 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 	{
 		return false;
 	}
-
 	return true;
+*/
 }
 
 bool PPU2C02::write(uint16_t addr, uint8_t data)
@@ -331,8 +344,8 @@ void PPU2C02::reset()
 	status_.byte_ = 0x00;
 	mask_.byte_ = 0x00;
 	control_.byte_ = 0x00;
-	vram_addr.byte_ = 0x0000;
-	tram_addr.byte_ = 0x0000;
+	loopy_v_.byte_ = 0x0000;
+	loopy_t_.byte_ = 0x0000;
 }
 
 void PPU2C02::clock()
@@ -360,16 +373,16 @@ void PPU2C02::clock()
 			// A single name table is 32x30 tiles. As we increment horizontally
 			// we may cross into a neighbouring nametable, or wrap around to
 			// a neighbouring nametable
-			if (vram_addr.coarse_x == 31)
+			if (loopy_v_.coarse_x == 31)
 			{
 				// Leaving nametable so wrap address round
-				vram_addr.coarse_x = 0;
-				vram_addr.NN ^= 1;
+				loopy_v_.coarse_x = 0;
+				loopy_v_.NN ^= 1;
 			}
 			else
 			{
 				// Staying in current nametable, so just increment
-				vram_addr.coarse_x++;
+				loopy_v_.coarse_x++;
 			}
 		}
 	};
@@ -395,9 +408,9 @@ void PPU2C02::clock()
 		if (mask_.b || mask_.s)
 		{
 			// If possible, just increment the fine y offset
-			if (vram_addr.fine_y < 7)
+			if (loopy_v_.fine_y < 7)
 			{
-				vram_addr.fine_y++;
+				loopy_v_.fine_y++;
 			}
 			else
 			{
@@ -409,26 +422,26 @@ void PPU2C02::clock()
 				// y offset is the specific "scanline"
 
 				// Reset fine y offset
-				vram_addr.fine_y = 0;
+				loopy_v_.fine_y = 0;
 
 				// Check if we need to swap vertical nametable targets
-				if (vram_addr.coarse_y == 29)
+				if (loopy_v_.coarse_y == 29)
 				{
 					// We do, so reset coarse y offset
-					vram_addr.coarse_y = 0;
-					vram_addr.NN ^= 2;
+					loopy_v_.coarse_y = 0;
+					loopy_v_.NN ^= 2;
 				}
-				else if (vram_addr.coarse_y == 31)
+				else if (loopy_v_.coarse_y == 31)
 				{
 					// In case the pointer is in the attribute memory, we
 					// just wrap around the current nametable
-					vram_addr.coarse_y = 0;
+					loopy_v_.coarse_y = 0;
 				}
 				else
 				{
 					// None of the above boundary/wrapping conditions apply
 					// so just increment the coarse y offset
-					vram_addr.coarse_y++;
+					loopy_v_.coarse_y++;
 				}
 			}
 		}
@@ -443,8 +456,8 @@ void PPU2C02::clock()
 		// Ony if rendering is enabled
 		if (mask_.b || mask_.s)
 		{
-			vram_addr.NN = (tram_addr.NN & 1) | (vram_addr.NN & 2);
-			vram_addr.coarse_x = tram_addr.coarse_x;
+			loopy_v_.NN = (loopy_t_.NN & 1) | (loopy_v_.NN & 2);
+			loopy_v_.coarse_x = loopy_t_.coarse_x;
 		}
 	};
 
@@ -457,9 +470,9 @@ void PPU2C02::clock()
 		// Ony if rendering is enabled
 		if (mask_.b || mask_.s)
 		{
-			vram_addr.fine_y = tram_addr.fine_y;
-			vram_addr.NN = (tram_addr.NN & 2) | (vram_addr.NN & 1);
-			vram_addr.coarse_y = tram_addr.coarse_y;
+			loopy_v_.fine_y = loopy_t_.fine_y;
+			loopy_v_.NN = (loopy_t_.NN & 2) | (loopy_v_.NN & 1);
+			loopy_v_.coarse_y = loopy_t_.coarse_y;
 		}
 	};
 
@@ -578,9 +591,9 @@ void PPU2C02::clock()
 				LoadBackgroundShifters();
 
 				// Fetch the next background tile ID
-				// "(vram_addr.byte_ & 0x0FFF)" : Mask to 12 bits that are relevant
+				// "(loopy_v_.byte_ & 0x0FFF)" : Mask to 12 bits that are relevant
 				// "| 0x2000"                 : Offset into nametable space on PPU address bus
-				read(0x2000 | (vram_addr.byte_ & 0x0FFF), bg_next_tile_id);
+				read(0x2000 | (loopy_v_.byte_ & 0x0FFF), bg_next_tile_id);
 
 				// Explanation:
 				// The bottom 12 bits of the loopy register provide an index into
@@ -636,9 +649,9 @@ void PPU2C02::clock()
 				// Reconstruct the 12 bit loopy address into an offset into the
 				// attribute memory
 
-				// "(vram_addr.coarse_x >> 2)"        : integer divide coarse x by 4, 
+				// "(loopy_v_.coarse_x >> 2)"        : integer divide coarse x by 4, 
 				//                                      from 5 bits to 3 bits
-				// "((vram_addr.coarse_y >> 2) << 3)" : integer divide coarse y by 4, 
+				// "((loopy_v_.coarse_y >> 2) << 3)" : integer divide coarse y by 4, 
 				//                                      from 5 bits to 3 bits,
 				//                                      shift to make room for coarse x
 
@@ -647,9 +660,9 @@ void PPU2C02::clock()
 				// All attribute memory begins at 0x03C0 within a nametable, so OR with
 				// result to select target nametable, and attribute byte offset. Finally
 				// OR with 0x2000 to offset into nametable address space on PPU bus.				
-				read(0x23C0 | (vram_addr.NN << 10)
-					| ((vram_addr.coarse_y >> 2) << 3)
-					| (vram_addr.coarse_x >> 2), bg_next_tile_attrib);
+				read(0x23C0 | (loopy_v_.NN << 10)
+					| ((loopy_v_.coarse_y >> 2) << 3)
+					| (loopy_v_.coarse_x >> 2), bg_next_tile_attrib);
 
 				// Right we've read the correct attribute byte for a specified address,
 				// but the byte itself is broken down further into the 2x2 tile groups
@@ -671,8 +684,8 @@ void PPU2C02::clock()
 				// Likewise if "coarse x % 4" < 2 we are in the left half else right half.
 				// Ultimately we want the bottom two bits of our attribute word to be the
 				// palette selected. So shift as required...				
-				if (vram_addr.coarse_y & 0x02) bg_next_tile_attrib >>= 4;
-				if (vram_addr.coarse_x & 0x02) bg_next_tile_attrib >>= 2;
+				if (loopy_v_.coarse_y & 0x02) bg_next_tile_attrib >>= 4;
+				if (loopy_v_.coarse_x & 0x02) bg_next_tile_attrib >>= 2;
 				bg_next_tile_attrib &= 0x03;
 				break;
 
@@ -695,13 +708,13 @@ void PPU2C02::clock()
 				//                                         or 4K offset
 				// "((uint16_t)bg_next_tile_id << 4)"    : the tile id multiplied by 16, as
 				//                                         2 lots of 8 rows of 8 bit pixels
-				// "(vram_addr.fine_y)"                  : Offset into which row based on
+				// "(loopy_v_.fine_y)"                  : Offset into which row based on
 				//                                         vertical scroll offset
 				// "+ 0"                                 : Mental clarity for plane offset
 				// Note: No PPU address bus offset required as it starts at 0x0000
 				read((control_.B << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
-					+ (vram_addr.fine_y) + 0, bg_next_tile_lsb);
+					+ (loopy_v_.fine_y) + 0, bg_next_tile_lsb);
 
 				break;
 			case 6:
@@ -709,7 +722,7 @@ void PPU2C02::clock()
 				// This is the same as above, but has a +8 offset to select the next bit plane
 				read((control_.B << 12)
 					+ ((uint16_t)bg_next_tile_id << 4)
-					+ (vram_addr.fine_y) + 8, bg_next_tile_msb);
+					+ (loopy_v_.fine_y) + 8, bg_next_tile_msb);
 				break;
 			case 7:
 				// Increment the background tile "pointer" to the next tile horizontally
@@ -736,7 +749,7 @@ void PPU2C02::clock()
 		// Superfluous reads of tile id at end of scanline
 		if (cycle == 338 || cycle == 340)
 		{
-			read(0x2000 | (vram_addr.byte_ & 0x0FFF), bg_next_tile_id);
+			read(0x2000 | (loopy_v_.byte_ & 0x0FFF), bg_next_tile_id);
 		}
 
 		if (scanline == -1 && cycle >= 280 && cycle < 305)
