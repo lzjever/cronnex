@@ -71,7 +71,6 @@ public:
 		uint8_t byte_;
 	} status_;
 
-	uint8_t oam_addr_ = 0x00;
 
 	//SCROLL
 	union loopy_register
@@ -139,6 +138,7 @@ public:
 		uint8_t attribute;
 		uint8_t x;			// X position of left side of sprite.
 	} OAM_[64];
+	uint8_t oam_addr_ = 0x00;
 
 
 	ObjectAttributeMemoryItem spriteScanline[8];
