@@ -130,7 +130,7 @@ void CPU6502::reset()
 	a_ = x_ = y_ = 0;
 	sp_ = 0xfd;
 	status_ = flag_constant;
-	//manually set the cycle counts.
+	//manually set the cycle_ counts.
 	cycles_left_on_ins_ = 8;
 	total_cycles_ = 0;
 	total_instructions_ = 0;
@@ -146,7 +146,7 @@ void CPU6502::irq()
 	status_ |= flag_interrupt;
 	status_ |= flag_constant;
 	pc_ = bus_read16(0xfffe) | (bus_read16(0xffff) << 8);
-	//manually set the cycle counts.
+	//manually set the cycle_ counts.
 	cycles_left_on_ins_ = 7;
 }
 void CPU6502::nmi()
@@ -158,7 +158,7 @@ void CPU6502::nmi()
 	status_ |= flag_interrupt;
 	status_ |= flag_constant;
 	pc_ = bus_read16(0xfffa) | (bus_read16(0xfffb) << 8);
-	//manually set the cycle counts.
+	//manually set the cycle_ counts.
 	cycles_left_on_ins_ = 8;
 
 }

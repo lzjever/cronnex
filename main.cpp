@@ -6,8 +6,6 @@
 #include "Cartridge.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"
-
-#define OLC_PGE_APPLICATION
 #include "olcPixelGameEngine.h"
 
 class PCGT_Program : public olc::PixelGameEngine

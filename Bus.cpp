@@ -126,7 +126,7 @@ bool Bus::dma()
 	}
 	else
 	{
-		((uint8_t*)ppu_->OAM_)[dma_inpage_addr_++] = dma_data_on_transfer_;
+		((uint8_t*)ppu_->oam_)[dma_inpage_addr_++] = dma_data_on_transfer_;
 		if (dma_inpage_addr_ == 0x00)
 		{
 			is_dma_mode_ = false;

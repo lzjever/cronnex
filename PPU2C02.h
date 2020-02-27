@@ -2,8 +2,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "olcPixelGameEngine.h"
-
 
 class Bus;
 class Cartridge;
@@ -33,15 +31,14 @@ public:
 	{
 		struct
 		{
-			uint8_t	NN: 2;
-			uint8_t I: 1;
-			uint8_t S: 1;
-			uint8_t B: 1;
-			uint8_t H: 1;
-			uint8_t P: 1;
-			uint8_t V: 1;
+			uint8_t	NN: 2;	//nametable select
+			uint8_t I: 1;	//increment mode
+			uint8_t S: 1;	//sprite tile select
+			uint8_t B: 1;	//background tile select
+			uint8_t H: 1;	//sprite height
+			uint8_t P: 1;	//PPU master / slave
+			uint8_t V: 1;	//NMI enable
 		};
-
 		uint8_t byte_;
 	} control_;
 
@@ -49,12 +46,12 @@ public:
 	{
 		struct
 		{
-			uint8_t G: 1;
-			uint8_t m: 1;
-			uint8_t M: 1;
-			uint8_t b: 1;
-			uint8_t s: 1;
-			uint8_t BGR: 3;
+			uint8_t G: 1;	//greyscale
+			uint8_t m: 1;	//background left column enable
+			uint8_t M: 1;	//sprite left column enable
+			uint8_t b: 1;	//background enable
+			uint8_t s: 1;	//sprite enable
+			uint8_t BGR: 3;	//color emphasis
 		};
 		uint8_t byte_;
 	} mask_;
@@ -64,9 +61,9 @@ public:
 		struct
 		{
 			uint8_t unused : 5;
-			uint8_t O : 1;
-			uint8_t S : 1;
-			uint8_t V : 1;
+			uint8_t O : 1;	//sprite overflow
+			uint8_t S : 1;	//sprite 0 hit
+			uint8_t V : 1;	//vblank
 		};
 
 		uint8_t byte_;
@@ -78,7 +75,6 @@ public:
 	{
 		struct
 		{
-
 			uint16_t coarse_x : 5;
 			uint16_t coarse_y : 5;
 			uint16_t NN : 2;
@@ -89,15 +85,15 @@ public:
 	}loopy_v_, loopy_t_;
 
 	// Pixel offset horizontally
-	uint8_t fine_x = 0x00;
+	uint8_t fine_x_ = 0x00;
 
 	// Internal communications
-	uint8_t address_latch = 0x00;
-	uint8_t ppu_data_buffer = 0x00;
+	uint8_t address_latch_ = 0x00;
+	uint8_t ppu_data_buffer_ = 0x00;
 
 	// Pixel "dot" position information
-	int16_t scanline = 0;
-	int16_t cycle = 0;
+	int16_t scanline_ = 0;
+	int16_t cycle_ = 0;
 
 	// Background rendering =========================================
 	uint8_t bg_next_tile_id = 0x00;
@@ -108,6 +104,18 @@ public:
 	uint16_t bg_shifter_pattern_hi = 0x0000;
 	uint16_t bg_shifter_attrib_lo = 0x0000;
 	uint16_t bg_shifter_attrib_hi = 0x0000;
+
+
+	void IncrementScrollX();
+	void IncrementScrollY();
+	void TransferAddressX();
+	void TransferAddressY();
+	void LoadBackgroundShifters();
+	void UpdateShifters();
+	void scanline_onscreen();
+	void scanline_post();
+	void scanline_mni();
+	void render(uint8_t  & palette, uint8_t &pixel);
 
 private:
 	uint8_t     name_table_[2 * 1024];
@@ -136,19 +144,19 @@ public:
 		*/
 		uint8_t attribute;
 		uint8_t x;			// X position of left side of sprite.
-	} OAM_[64];
+	} oam_[64];
 	uint8_t oam_addr_ = 0x00;
 
 
-	ObjectAttributeMemoryItem spriteScanline[8];
+	ObjectAttributeMemoryItem oam_on_scanline_[8];
 
-	uint8_t sprite_count;
-	uint8_t sprite_shifter_pattern_lo[8];
-	uint8_t sprite_shifter_pattern_hi[8];
+	uint8_t sprite_count_;
+	uint8_t sprite_shifter_pattern_lo_[8];
+	uint8_t sprite_shifter_pattern_hi_[8];
 
 	// Sprite Zero Collision Flags
-	bool bSpriteZeroHitPossible = false;
-	bool bSpriteZeroBeingRendered = false;
+	bool bSpriteZeroHitPossible_ = false;
+	bool bSpriteZeroBeingRendered_ = false;
 
 
 public:
