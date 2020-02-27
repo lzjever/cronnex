@@ -99,10 +99,10 @@ private:
 		//Donkey Kong (JU).nes
 		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\nestest.nes");
 		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Donkey Kong (JU).nes");
-		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Ice Climber (JE).nes");
+		cart = std::make_shared<Cartridge>("C:\\games\\NESrompack\\World\\Ice Climber (JE).nes");
 		
 		//cart = std::make_shared<Cartridge>("../test_bin/Ice Climber (JE).nes");
-		cart = std::make_shared<Cartridge>("../test_bin/Super Mario Bros. (World).nes");
+		//cart = std::make_shared<Cartridge>("../test_bin/Super Mario Bros. (World).nes");
 		
 		if (!cart->is_valid())
 			return false;

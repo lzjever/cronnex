@@ -137,26 +137,19 @@ uint16_t PPU2C02::unmirror_nametable(uint16_t addr, uint8_t mirror)
 bool PPU2C02::read(uint16_t addr, uint8_t &data)
 {
 	data = 0x00;
-	//uint8_t *name_table_ptr = &(name_table_[0][0]);
-	switch (addr)
-    {
-        case 0x0000 ... 0x1FFF:  
-        	return cart_ptr_->chr_read(addr, data);
-        break;
-        case 0x2000 ... 0x3EFF:  
-        	data = name_table_[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ]; 
-    	break;
-        case 0x3F00 ... 0x3FFF:
-        {
-            if ((addr & 0x13) == 0x10) 
-            	addr &= ~0x10;
-        	data = palette_table_[addr & 0x1F] & (mask_.G ? 0x30 : 0xFF);
 
-        }break;
-
-        default: 
-        	return false;
-    }
+	if (addr >= 0x0000 && addr <= 0x1FFF)
+		return cart_ptr_->chr_read(addr, data);
+	else if (addr >= 0x2000 && addr <= 0x3EFF)
+		data = name_table_[unmirror_nametable(addr, cart_ptr_->mirror_type_)];
+	else if (addr >= 0x3F00 && addr <= 0x3FFF)
+	{
+		if ((addr & 0x13) == 0x10)
+			addr &= ~0x10;
+		data = palette_table_[addr & 0x1F] & (mask_.G ? 0x30 : 0xFF);
+	}
+	else
+		return false;
     return true;
 }
 
@@ -164,22 +157,22 @@ bool PPU2C02::write(uint16_t addr, uint8_t data)
 {
 
 	//uint8_t *name_table_ptr = &(name_table_[0][0]);
-    switch (addr)
-    {
-        case 0x0000 ... 0x1FFF:  
-        	return cart_ptr_->chr_write(addr, data);
-        break;
-        case 0x2000 ... 0x3EFF:  
-        	name_table_[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ] = data;
-        break;
-        case 0x3F00 ... 0x3FFF:
-        {
-            if ((addr & 0x13) == 0x10) 
-            		addr &= ~0x10;
-            palette_table_[addr & 0x1F] = data;
 
-        }break;
+
+	if (addr >= 0x0000 && addr <= 0x1FFF)
+        	return cart_ptr_->chr_write(addr, data);
+	else if (addr >= 0x2000 && addr <= 0x3EFF)
+        	name_table_[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ] = data;
+	else if (addr >= 0x3F00 && addr <= 0x3FFF)
+    {
+        if ((addr & 0x13) == 0x10) 
+            	addr &= ~0x10;
+        palette_table_[addr & 0x1F] = data;
+
     }
+	else
+		return false;
+
     return true;
 }
 
