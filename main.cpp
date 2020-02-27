@@ -174,24 +174,13 @@ private:
 
 
 		DrawCpu(516, 2);
-		DrawCode(516, 72, 26);
-
-		// Draw Palettes & Pattern Tables ==============================================
-		const int nSwatchSize = 6;
-		for (int p = 0; p < 8; p++) // For each palette
-			for (int s = 0; s < 4; s++) // For each index
-				FillRect(516 + p * (nSwatchSize * 5) + s * nSwatchSize, 340,
-					nSwatchSize, nSwatchSize, nes->ppu_->get_render_pixel(p, s));
-
-		// Draw selection reticule around selected palette
-		DrawRect(516 + nSelectedPalette * (nSwatchSize * 5) - 1, 339, (nSwatchSize * 4), nSwatchSize, olc::WHITE);
-
-		// Generate Pattern Tables
-		//DrawSprite(516, 348, &nes->ppu_->GetPatternTable(0, nSelectedPalette));
-		//DrawSprite(648, 348, &nes->ppu_->GetPatternTable(1, nSelectedPalette));
-
-		// Draw rendered output ========================================================
-		DrawSprite(0, 0, &nes->ppu_->screen(), 2);
+//		DrawCode(516, 72, 26);
+		uint32_t * video_buffer = nes->ppu_->get_video_buffer();
+		olc::Sprite spr(256,240);
+		for(int i = 0; i < 256; i ++)
+			for (int j = 0; j < 240; j++)
+				spr.SetPixel(i,j,olc::Pixel( ((uint8_t*)&video_buffer[i + j * 256])[2],((uint8_t*)&video_buffer[i + j  * 256])[1],((uint8_t*)&video_buffer[i + j   * 256])[0]  ));
+		DrawSprite(0, 0, &spr, 2);
 		return true;
 	}
 };

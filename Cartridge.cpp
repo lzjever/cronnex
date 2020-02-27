@@ -40,12 +40,10 @@ Cartridge::Cartridge(const std::string& file_name)
 			chr_banks_num_ = header_.chr_rom_chunks;
 			if (chr_banks_num_ == 0)
 			{
-				// Create CHR RAM
 				chr_memory_.resize(8192);
 			}
 			else
 			{
-				// Allocate for ROM
 				chr_memory_.resize(chr_banks_num_ * 8192);
 			}
 			file.read((char*)chr_memory_.data(), chr_memory_.size());
@@ -63,8 +61,6 @@ Cartridge::Cartridge(const std::string& file_name)
 		{
 		case   0: mapper_ = std::make_shared<Mapper_000>(prg_banks_num_, chr_banks_num_); break;
 			//case   2: pMapper = std::make_shared<Mapper_002>(nPRGBanks, nCHRBanks); break;
-			//case   3: pMapper = std::make_shared<Mapper_003>(nPRGBanks, nCHRBanks); break;
-			//case  66: pMapper = std::make_shared<Mapper_066>(nPRGBanks, nCHRBanks); break;
 		}
 	}
 
@@ -131,8 +127,6 @@ bool Cartridge::chr_write(uint16_t addr, uint8_t data)
 
 void Cartridge::reset()
 {
-	// Note: This does not reset the ROM contents,
-	// but does reset the mapper.
 	if (mapper_ != nullptr)
 		mapper_->reset();
 }

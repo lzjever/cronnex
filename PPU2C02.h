@@ -12,8 +12,9 @@ class PPU2C02
 public:
 	PPU2C02();
 	~PPU2C02();
-	olc::Sprite& screen();
-	olc::Pixel& get_render_pixel(uint8_t palette, uint8_t pixel);
+	
+	uint32_t* get_video_buffer();
+	uint32_t  get_pixel_rgb(uint8_t palette, uint8_t pixel);
 	bool is_frame_complete_ = false;
 public:
 	//registers
@@ -28,7 +29,7 @@ public:
 	PPUDATA	$2007	dddd dddd	PPU data read / write
 	OAMDMA	$4014	aaaa aaaa	OAM DMA high address
 	*/
-	union PPUCTRL
+	union
 	{
 		struct
 		{
@@ -73,7 +74,7 @@ public:
 
 
 	//SCROLL
-	union LOOPY_REG
+	union
 	{
 		struct
 		{
@@ -85,9 +86,7 @@ public:
 			uint16_t unused : 1;
 		};
 		uint16_t byte_ = 0x0000;
-	};
-	LOOPY_REG loopy_v_; // Active "pointer" address into nametable to extract background tile info
-	LOOPY_REG loopy_t_; // Temporary store of information to be "transferred" into "pointer" at various times
+	}loopy_v_, loopy_t_;
 
 	// Pixel offset horizontally
 	uint8_t fine_x = 0x00;
@@ -116,8 +115,12 @@ private:
 	uint8_t		palette_table_[32];
 
 private:
-	olc::Pixel  pixel_colors_[64];
-	olc::Sprite screen_ = olc::Sprite(256, 240);
+	//olc::Pixel  pixel_colors_[64];
+	//olc::Sprite screen_ = olc::Sprite(256, 240);
+
+	uint32_t	rgb_colors_[64];
+	uint32_t	video_buffer_[256 * 240 * 3];
+
 
 public:
 	//http://wiki.nesdev.com/w/index.php/PPU_OAM
