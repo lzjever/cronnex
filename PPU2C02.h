@@ -12,7 +12,7 @@ class PPU2C02
 public:
 	PPU2C02();
 	~PPU2C02();
-	
+
 	uint32_t* get_video_buffer();
 	uint32_t  get_pixel_rgb(uint8_t palette, uint8_t pixel);
 	bool is_frame_complete_ = false;
@@ -110,16 +110,12 @@ public:
 	uint16_t bg_shifter_attrib_hi = 0x0000;
 
 private:
-	uint8_t     name_table_[2][1024];
-	uint8_t     pattern_table_[2][4096];
+	uint8_t     name_table_[2 * 1024];
 	uint8_t		palette_table_[32];
 
 private:
-	//olc::Pixel  pixel_colors_[64];
-	//olc::Sprite screen_ = olc::Sprite(256, 240);
-
-	uint32_t	rgb_colors_[64];
-	uint32_t	video_buffer_[256 * 240 * 3];
+	uint32_t	rgb_colors_[64]; //pre-defined colors for palette to choose from.
+	uint32_t	video_buffer_[256 * 240]; // the screen.
 
 
 public:
@@ -145,6 +141,7 @@ public:
 
 
 	ObjectAttributeMemoryItem spriteScanline[8];
+
 	uint8_t sprite_count;
 	uint8_t sprite_shifter_pattern_lo[8];
 	uint8_t sprite_shifter_pattern_hi[8];

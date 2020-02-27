@@ -137,14 +137,14 @@ uint16_t PPU2C02::unmirror_nametable(uint16_t addr, uint8_t mirror)
 bool PPU2C02::read(uint16_t addr, uint8_t &data)
 {
 	data = 0x00;
-	uint8_t *name_table_ptr = &(name_table_[0][0]);
+	//uint8_t *name_table_ptr = &(name_table_[0][0]);
 	switch (addr)
     {
         case 0x0000 ... 0x1FFF:  
         	return cart_ptr_->chr_read(addr, data);
         break;
         case 0x2000 ... 0x3EFF:  
-        	data = name_table_ptr[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ]; 
+        	data = name_table_[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ]; 
     	break;
         case 0x3F00 ... 0x3FFF:
         {
@@ -163,14 +163,14 @@ bool PPU2C02::read(uint16_t addr, uint8_t &data)
 bool PPU2C02::write(uint16_t addr, uint8_t data)
 {
 
-	uint8_t *name_table_ptr = &(name_table_[0][0]);
+	//uint8_t *name_table_ptr = &(name_table_[0][0]);
     switch (addr)
     {
         case 0x0000 ... 0x1FFF:  
         	return cart_ptr_->chr_write(addr, data);
         break;
         case 0x2000 ... 0x3EFF:  
-        	name_table_ptr[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ] = data;
+        	name_table_[unmirror_nametable(addr,cart_ptr_->mirror_type_ ) ] = data;
         break;
         case 0x3F00 ... 0x3FFF:
         {
@@ -1016,7 +1016,7 @@ void PPU2C02::clock()
 	int x, y;
 	x = cycle - 1;
 	y = scanline;
-	if(x <= 256 && y <= 240 && x >=0 && y >= 0)
+	if(x < 256 && y < 240 && x >=0 && y >= 0)
 		video_buffer_[y * 256 + x] = get_pixel_rgb(palette, pixel);
 
 	// Advance renderer - it never stops, it's relentless
