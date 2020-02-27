@@ -51,7 +51,6 @@ private:
 	void ind();
 	
 
-private:
 	//operations
 	void adc();	void and_();	void asl();	void bcc();
 	void bcs();	void beq();	void bit();	void bmi();
@@ -83,8 +82,6 @@ private:
 
 	uint8_t bus_read8(uint16_t addr);
 	uint16_t bus_read16(uint16_t addr);
-
-private:
 
 	inline void set_sign(bool x) { 
 		x ? (status_ |= flag_sign) : (status_ &= (~flag_sign)); 
