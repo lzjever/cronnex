@@ -286,6 +286,133 @@ void PPU2C02::LoadBackgroundShifters()
 }
 
 
+void PPU2C02::LoadForegroundShifters()
+{
+	// Now we're at the very end of the scanline_, I'm going to prepare the 
+	// sprite shifters with the 8 or less selected sprites.
+
+	for (uint8_t i = 0; i < sprite_count_; i++)
+	{
+		// We need to extract the 8-bit row patterns of the sprite with the
+		// correct vertical offset. The "Sprite Mode" also affects this as
+		// the sprites may be 8 or 16 rows high. Additionally, the sprite
+		// can be flipped both vertically and horizontally. So there's a lot
+		// going on here :P
+
+		uint8_t sprite_pattern_bits_lo, sprite_pattern_bits_hi;
+		uint16_t sprite_pattern_addr_lo, sprite_pattern_addr_hi;
+
+		// Determine the memory addresses that contain the byte of pattern data. We
+		// only need the lo pattern address, because the hi pattern address is always
+		// offset by 8 from the lo address.
+		if (!control_.H)
+		{
+			// 8x8 Sprite Mode - The control register determines the pattern table
+			if (!(oam_on_scanline_[i].attribute & 0x80))
+			{
+				// Sprite is NOT flipped vertically, i.e. normal    
+				sprite_pattern_addr_lo =
+					(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
+					| (oam_on_scanline_[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
+					| (scanline_ - oam_on_scanline_[i].y); // Which Row in cell? (0->7)
+
+			}
+			else
+			{
+				// Sprite is flipped vertically, i.e. upside down
+				sprite_pattern_addr_lo =
+					(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
+					| (oam_on_scanline_[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
+					| (7 - (scanline_ - oam_on_scanline_[i].y)); // Which Row in cell? (7->0)
+			}
+
+		}
+		else
+		{
+			// 8x16 Sprite Mode - The sprite attribute determines the pattern table
+			if (!(oam_on_scanline_[i].attribute & 0x80))
+			{
+				// Sprite is NOT flipped vertically, i.e. normal
+				if (scanline_ - oam_on_scanline_[i].y < 8)
+				{
+					// Reading Top half Tile
+					sprite_pattern_addr_lo =
+						((oam_on_scanline_[i].id & 0x01) << 12)  // Which Pattern Table? 0KB or 4KB offset
+						| ((oam_on_scanline_[i].id & 0xFE) << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
+						| ((scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
+				}
+				else
+				{
+					// Reading Bottom Half Tile
+					sprite_pattern_addr_lo =
+						((oam_on_scanline_[i].id & 0x01) << 12)  // Which Pattern Table? 0KB or 4KB offset
+						| (((oam_on_scanline_[i].id & 0xFE) + 1) << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
+						| ((scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
+				}
+			}
+			else
+			{
+				// Sprite is flipped vertically, i.e. upside down
+				if (scanline_ - oam_on_scanline_[i].y < 8)
+				{
+					// Reading Top half Tile
+					sprite_pattern_addr_lo =
+						((oam_on_scanline_[i].id & 0x01) << 12)    // Which Pattern Table? 0KB or 4KB offset
+						| (((oam_on_scanline_[i].id & 0xFE) + 1) << 4)    // Which Cell? Tile ID * 16 (16 bytes per tile)
+						| (7 - (scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
+				}
+				else
+				{
+					// Reading Bottom Half Tile
+					sprite_pattern_addr_lo =
+						((oam_on_scanline_[i].id & 0x01) << 12)    // Which Pattern Table? 0KB or 4KB offset
+						| ((oam_on_scanline_[i].id & 0xFE) << 4)    // Which Cell? Tile ID * 16 (16 bytes per tile)
+						| (7 - (scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
+				}
+			}
+		}
+
+		// Phew... XD I'm absolutely certain you can use some fantastic bit 
+		// manipulation to reduce all of that to a few one liners, but in this
+		// form it's easy to see the processes required for the different
+		// sizes and vertical orientations
+
+		// Hi bit plane equivalent is always offset by 8 bytes from lo bit plane
+		sprite_pattern_addr_hi = sprite_pattern_addr_lo + 8;
+
+		// Now we have the address of the sprite patterns, we can read them
+		read(sprite_pattern_addr_lo, sprite_pattern_bits_lo);
+		read(sprite_pattern_addr_hi, sprite_pattern_bits_hi);
+
+		// If the sprite is flipped horizontally, we need to flip the 
+		// pattern bytes. 
+		if (oam_on_scanline_[i].attribute & 0x40)
+		{
+			// This little lambda function "flips" a byte
+			// so 0b11100000 becomes 0b00000111. It's very
+			// clever, and stolen completely from here:
+			// https://stackoverflow.com/a/2602885
+			auto flipbyte = [](uint8_t b)
+			{
+				b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+				b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+				b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+				return b;
+			};
+
+			// Flip Patterns Horizontally
+			sprite_pattern_bits_lo = flipbyte(sprite_pattern_bits_lo);
+			sprite_pattern_bits_hi = flipbyte(sprite_pattern_bits_hi);
+		}
+
+		// Finally! We can load the pattern into our sprite shift registers
+		// ready for rendering on the next scanline_
+		sprite_shifter_pattern_lo_[i] = sprite_pattern_bits_lo;
+		sprite_shifter_pattern_hi_[i] = sprite_pattern_bits_hi;
+	}
+}
+
+
 void PPU2C02::UpdateShifters()
 {
 	if (mask_.b)
@@ -428,128 +555,7 @@ void PPU2C02::scanline_onscreen()
 
 	if (cycle_ == 340)
 	{
-		// Now we're at the very end of the scanline_, I'm going to prepare the 
-		// sprite shifters with the 8 or less selected sprites.
-
-		for (uint8_t i = 0; i < sprite_count_; i++)
-		{
-			// We need to extract the 8-bit row patterns of the sprite with the
-			// correct vertical offset. The "Sprite Mode" also affects this as
-			// the sprites may be 8 or 16 rows high. Additionally, the sprite
-			// can be flipped both vertically and horizontally. So there's a lot
-			// going on here :P
-
-			uint8_t sprite_pattern_bits_lo, sprite_pattern_bits_hi;
-			uint16_t sprite_pattern_addr_lo, sprite_pattern_addr_hi;
-
-			// Determine the memory addresses that contain the byte of pattern data. We
-			// only need the lo pattern address, because the hi pattern address is always
-			// offset by 8 from the lo address.
-			if (!control_.H)
-			{
-				// 8x8 Sprite Mode - The control register determines the pattern table
-				if (!(oam_on_scanline_[i].attribute & 0x80))
-				{
-					// Sprite is NOT flipped vertically, i.e. normal    
-					sprite_pattern_addr_lo =
-						(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
-						| (oam_on_scanline_[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
-						| (scanline_ - oam_on_scanline_[i].y); // Which Row in cell? (0->7)
-
-				}
-				else
-				{
-					// Sprite is flipped vertically, i.e. upside down
-					sprite_pattern_addr_lo =
-						(control_.S << 12)  // Which Pattern Table? 0KB or 4KB offset
-						| (oam_on_scanline_[i].id << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
-						| (7 - (scanline_ - oam_on_scanline_[i].y)); // Which Row in cell? (7->0)
-				}
-
-			}
-			else
-			{
-				// 8x16 Sprite Mode - The sprite attribute determines the pattern table
-				if (!(oam_on_scanline_[i].attribute & 0x80))
-				{
-					// Sprite is NOT flipped vertically, i.e. normal
-					if (scanline_ - oam_on_scanline_[i].y < 8)
-					{
-						// Reading Top half Tile
-						sprite_pattern_addr_lo =
-							((oam_on_scanline_[i].id & 0x01) << 12)  // Which Pattern Table? 0KB or 4KB offset
-							| ((oam_on_scanline_[i].id & 0xFE) << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
-							| ((scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
-					}
-					else
-					{
-						// Reading Bottom Half Tile
-						sprite_pattern_addr_lo =
-							((oam_on_scanline_[i].id & 0x01) << 12)  // Which Pattern Table? 0KB or 4KB offset
-							| (((oam_on_scanline_[i].id & 0xFE) + 1) << 4)  // Which Cell? Tile ID * 16 (16 bytes per tile)
-							| ((scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
-					}
-				}
-				else
-				{
-					// Sprite is flipped vertically, i.e. upside down
-					if (scanline_ - oam_on_scanline_[i].y < 8)
-					{
-						// Reading Top half Tile
-						sprite_pattern_addr_lo =
-							((oam_on_scanline_[i].id & 0x01) << 12)    // Which Pattern Table? 0KB or 4KB offset
-							| (((oam_on_scanline_[i].id & 0xFE) + 1) << 4)    // Which Cell? Tile ID * 16 (16 bytes per tile)
-							| (7 - (scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
-					}
-					else
-					{
-						// Reading Bottom Half Tile
-						sprite_pattern_addr_lo =
-							((oam_on_scanline_[i].id & 0x01) << 12)    // Which Pattern Table? 0KB or 4KB offset
-							| ((oam_on_scanline_[i].id & 0xFE) << 4)    // Which Cell? Tile ID * 16 (16 bytes per tile)
-							| (7 - (scanline_ - oam_on_scanline_[i].y) & 0x07); // Which Row in cell? (0->7)
-					}
-				}
-			}
-
-			// Phew... XD I'm absolutely certain you can use some fantastic bit 
-			// manipulation to reduce all of that to a few one liners, but in this
-			// form it's easy to see the processes required for the different
-			// sizes and vertical orientations
-
-			// Hi bit plane equivalent is always offset by 8 bytes from lo bit plane
-			sprite_pattern_addr_hi = sprite_pattern_addr_lo + 8;
-
-			// Now we have the address of the sprite patterns, we can read them
-			read(sprite_pattern_addr_lo, sprite_pattern_bits_lo);
-			read(sprite_pattern_addr_hi, sprite_pattern_bits_hi);
-
-			// If the sprite is flipped horizontally, we need to flip the 
-			// pattern bytes. 
-			if (oam_on_scanline_[i].attribute & 0x40)
-			{
-				// This little lambda function "flips" a byte
-				// so 0b11100000 becomes 0b00000111. It's very
-				// clever, and stolen completely from here:
-				// https://stackoverflow.com/a/2602885
-				auto flipbyte = [](uint8_t b)
-				{
-					b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-					b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-					b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-					return b;
-				};
-
-				// Flip Patterns Horizontally
-				sprite_pattern_bits_lo = flipbyte(sprite_pattern_bits_lo);
-				sprite_pattern_bits_hi = flipbyte(sprite_pattern_bits_hi);
-			}
-
-			// Finally! We can load the pattern into our sprite shift registers
-			// ready for rendering on the next scanline_
-			sprite_shifter_pattern_lo_[i] = sprite_pattern_bits_lo;
-			sprite_shifter_pattern_hi_[i] = sprite_pattern_bits_hi;
-		}
+		LoadForegroundShifters();
 	}
 }
 void PPU2C02::scanline_post()

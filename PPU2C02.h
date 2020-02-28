@@ -112,6 +112,7 @@ public:
 	void TransferAddressX();
 	void TransferAddressY();
 	void LoadBackgroundShifters();
+	void LoadForegroundShifters();
 	void UpdateShifters();
 	void scanline_onscreen();
 	void scanline_post();
