@@ -288,26 +288,14 @@ void PPU2C02::LoadBackgroundShifters()
 
 void PPU2C02::LoadForegroundShifters()
 {
-	// Now we're at the very end of the scanline_, I'm going to prepare the 
-	// sprite shifters with the 8 or less selected sprites.
-
 	for (uint8_t i = 0; i < sprite_count_; i++)
 	{
-		// We need to extract the 8-bit row patterns of the sprite with the
-		// correct vertical offset. The "Sprite Mode" also affects this as
-		// the sprites may be 8 or 16 rows high. Additionally, the sprite
-		// can be flipped both vertically and horizontally. So there's a lot
-		// going on here :P
 
 		uint8_t sprite_pattern_bits_lo, sprite_pattern_bits_hi;
 		uint16_t sprite_pattern_addr_lo, sprite_pattern_addr_hi;
 
-		// Determine the memory addresses that contain the byte of pattern data. We
-		// only need the lo pattern address, because the hi pattern address is always
-		// offset by 8 from the lo address.
 		if (!control_.H)
 		{
-			// 8x8 Sprite Mode - The control register determines the pattern table
 			if (!(oam_on_scanline_[i].attribute & 0x80))
 			{
 				// Sprite is NOT flipped vertically, i.e. normal    
