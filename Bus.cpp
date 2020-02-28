@@ -2,7 +2,7 @@
 #include "CPU6502.h"
 #include "PPU2C02.h"
 #include "Cartridge.h"
-#include "common.h"
+#include "Common.h"
 
 Bus::Bus()
 {

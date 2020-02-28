@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Cartridge.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="CPU6502.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="Mapper_000.h" />

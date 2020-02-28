@@ -69,7 +69,6 @@ public:
 		uint8_t byte_;
 	} status_;
 
-
 	//SCROLL
 	union
 	{
@@ -83,37 +82,35 @@ public:
 		};
 		uint16_t byte_ = 0x0000;
 	}loopy_v_, loopy_t_;
-
-	// Pixel offset horizontally
 	uint8_t fine_x_ = 0x00;
-
-	// Internal communications
+	
+	//for 1 clock cycle delay
 	uint8_t address_latch_ = 0x00;
 	uint8_t ppu_data_buffer_ = 0x00;
 
-	// Pixel "dot" position information
-	int16_t scanline_ = 0;
-	int16_t cycle_ = 0;
 
-	// Background rendering =========================================
-	uint8_t bg_next_tile_id = 0x00;
-	uint8_t bg_next_tile_attrib = 0x00;
-	uint8_t bg_next_tile_lsb = 0x00;
-	uint8_t bg_next_tile_msb = 0x00;
-	uint16_t bg_shifter_pattern_lo = 0x0000;
-	uint16_t bg_shifter_pattern_hi = 0x0000;
-	uint16_t bg_shifter_attrib_lo = 0x0000;
-	uint16_t bg_shifter_attrib_hi = 0x0000;
+	int16_t scanline_ = 0; // y
+	int16_t cycle_ = 0; //x
+
+
+	uint8_t bg_next_tile_id_;
+	uint8_t bg_next_tile_attr_;
+	uint8_t bg_next_tile_lsb_;
+	uint8_t bg_next_tile_msb_;
+	uint16_t bg_shifter_pattern_lo_;
+	uint16_t bg_shifter_pattern_hi_;
+	uint16_t bg_shifter_attrib_lo_;
+	uint16_t bg_shifter_attrib_hi_;
 
 	bool test_render_enable();
 	void load_oam_on_next_scanline();
-	void IncrementScrollX();
-	void IncrementScrollY();
-	void TransferAddressX();
-	void TransferAddressY();
-	void LoadBackgroundShifters();
-	void LoadForegroundShifters();
-	void UpdateShifters();
+	void scroll_x();
+	void scroll_y();
+	void set_loopy_v_x();
+	void set_loopy_v_y();
+	void load_background_shifters();
+	void load_foreground_shifters();
+	void update_shifters();
 	void scanline_onscreen();
 	void scanline_post();
 	void scanline_mni();
@@ -126,7 +123,6 @@ private:
 private:
 	uint32_t	rgb_colors_[64]; //pre-defined colors for palette to choose from.
 	uint32_t	video_buffer_[256 * 240]; // the screen.
-
 
 public:
 	//http://wiki.nesdev.com/w/index.php/PPU_OAM
@@ -149,17 +145,13 @@ public:
 	} oam_[64];
 	uint8_t oam_addr_ = 0x00;
 
-
 	ObjectAttributeMemoryItem oam_on_scanline_[8];
-
 	uint8_t sprite_count_;
 	uint8_t sprite_shifter_pattern_lo_[8];
 	uint8_t sprite_shifter_pattern_hi_[8];
 
-	// Sprite Zero Collision Flags
-	bool bSpriteZeroHitPossible_ = false;
-	bool bSpriteZeroBeingRendered_ = false;
-
+	bool sprite_zero_hit_; // to set the value in status_
+	bool sprite_zero_being_rendered_;
 
 public:
 	void connect_bus(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
