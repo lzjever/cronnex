@@ -99,7 +99,7 @@ private:
 		//cart = std::make_shared<Cartridge>("E:\\works\\pcgt\\test_bin\\Donkey Kong (JU).nes");
 		//cart = std::make_shared<Cartridge>("C:\\games\\NESrompack\\World\\Ice Climber (JE).nes");
 		
-		cart = std::make_shared<Cartridge>("../test_bin/Ice Climber (JE).nes");
+		cart = std::make_shared<Cartridge>("../../test_bin2/Ice Climber (JE).nes");
 		//cart = std::make_shared<Cartridge>("../test_bin/Super Mario Bros. (World).nes");
 		
 		if (!cart->is_valid())
@@ -131,6 +131,42 @@ private:
 		if (GetKey(olc::Key::SPACE).bPressed) bEmulationRun = !bEmulationRun;
 		if (GetKey(olc::Key::R).bPressed) nes->reset();
 		if (GetKey(olc::Key::P).bPressed) (++nSelectedPalette) &= 0x07;
+
+
+
+		if (GetKey(olc::Key::K1).bPressed)
+		{
+			
+			cart = std::make_shared<Cartridge>("../../test_bin2/Donkey Kong (JU).nes");
+			if (!cart->is_valid())	return false;
+			nes->insert_cartridge(cart);
+			nes->reset();
+		}
+		if (GetKey(olc::Key::K2).bPressed)
+		{
+			
+			cart = std::make_shared<Cartridge>("../../test_bin2/Ice Climber (JE).nes");
+			if (!cart->is_valid())	return false;
+			nes->insert_cartridge(cart);
+			nes->reset();
+		}
+		if (GetKey(olc::Key::K3).bPressed)
+		{
+			
+			cart = std::make_shared<Cartridge>("../../test_bin2/Super Mario Bros. (World).nes");
+			if (!cart->is_valid())	return false;
+			nes->insert_cartridge(cart);
+			nes->reset();
+		}
+		if (GetKey(olc::Key::K4).bPressed)
+		{
+			
+			cart = std::make_shared<Cartridge>("../../test_bin2/nestest.nes");
+			if (!cart->is_valid())	return false;
+			nes->insert_cartridge(cart);
+			nes->reset();
+		}
+
 
 		if (bEmulationRun)
 		{
@@ -166,6 +202,7 @@ private:
 				// Reset frame completion flag
 				nes->ppu_->is_frame_complete_ = false;
 			}
+
 		}
 
 

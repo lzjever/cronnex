@@ -77,7 +77,7 @@ public:
 		{
 			uint16_t coarse_x : 5;
 			uint16_t coarse_y : 5;
-			uint16_t NN : 2;
+			uint16_t nametable_select : 2;
 			uint16_t fine_y : 3;
 			uint16_t unused : 1;
 		};
@@ -105,7 +105,8 @@ public:
 	uint16_t bg_shifter_attrib_lo = 0x0000;
 	uint16_t bg_shifter_attrib_hi = 0x0000;
 
-
+	bool test_render_enable();
+	void load_oam_on_next_scanline();
 	void IncrementScrollX();
 	void IncrementScrollY();
 	void TransferAddressX();
