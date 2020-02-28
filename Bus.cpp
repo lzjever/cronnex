@@ -2,6 +2,7 @@
 #include "CPU6502.h"
 #include "PPU2C02.h"
 #include "Cartridge.h"
+#include "common.h"
 
 Bus::Bus()
 {
@@ -17,20 +18,20 @@ Bus::~Bus()
 
 bool Bus::write(uint16_t addr, uint8_t data)
 {	
+	bool ret = false;
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		onboard_ram_[addr & 0x07FF] = data;
-		return true;
+		ret = true;
 	}
 	else if (addr >= 0x4016 && addr <= 0x4017)
 	{
 		controller_state_[addr & 0x0001] = controller_[addr & 0x0001];
-		return true;
+		ret = true;
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF) //to ppu memory-mapped registers.
 	{
-		ppu_->register_write(addr, data);
-		return true;
+		ret = ppu_->register_write(addr, data);
 	}
 	else if (addr == 0x4014)
 	{
@@ -39,34 +40,39 @@ bool Bus::write(uint16_t addr, uint8_t data)
 
 		is_dma_mode_ = true;
 		cycles_on_dma_ = 0;
-		return true;
+		ret = true;
 	}
-	return false;
-	
+	return true;
+	assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
+	return ret;
 }
 
 bool Bus::read(uint16_t addr, uint8_t &data)
 {
+	bool ret = false;
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		data = onboard_ram_[addr & 0x07FF];
-		return true;
+		ret = true;
+	}
+	else if (addr >= 0x2000 && addr <= 0x3FFF)
+	{
+		ret = ppu_->register_read(addr, data);
 	}
 	else if (addr >= 0x4016 && addr <= 0x4017)
 	{
 		data = (controller_state_[addr & 0x0001] & 0x80) > 0;
 		controller_state_[addr & 0x0001] <<= 1;
-		return true;
+		ret = true;
 	}
-	else if (addr >= 0x2000 && addr <= 0x3FFF)
+	else if (addr >= 0x4020)
 	{
-		return ppu_->register_read(addr, data);
+		ret = cart_->prg_read(addr, data);
 	}
-	else 
-	{
-		return cart_->prg_read(addr, data);
-	}
-	return false;
+	return true;
+
+	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
+	return ret;
 }
 
 bool Bus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
