@@ -42,7 +42,11 @@ bool Bus::write(uint16_t addr, uint8_t data)
 		cycles_on_dma_ = 0;
 		ret = true;
 	}
-	return true;
+	else if (addr >= 0x4000 && addr <= 0x4020)
+	{
+		ret = true;
+	}
+	//return true;
 	assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
 	return ret;
 }
@@ -69,7 +73,7 @@ bool Bus::read(uint16_t addr, uint8_t &data)
 	{
 		ret = cart_->prg_read(addr, data);
 	}
-	return true;
+	//return true;
 
 	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
 	return ret;

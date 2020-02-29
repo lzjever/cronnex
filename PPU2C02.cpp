@@ -186,6 +186,12 @@ void PPU2C02::reset()
 	ppu_data_buffer_ = 0x00;
 	scanline_ = 0;
 	cycle_ = 0;
+	status_.byte_ = 0x00;
+	mask_.byte_ = 0x00;
+	control_.byte_ = 0x00;
+	loopy_v_.byte_ = 0x0000;
+	loopy_t_.byte_ = 0x0000;
+
 	bg_next_tile_id_ = 0x00;
 	bg_next_tile_attr_ = 0x00;
 	bg_next_tile_lsb_ = 0x00;
@@ -194,14 +200,11 @@ void PPU2C02::reset()
 	bg_shifter_pattern_hi_ = 0x0000;
 	bg_shifter_attrib_lo_ = 0x0000;
 	bg_shifter_attrib_hi_ = 0x0000;
-	status_.byte_ = 0x00;
-	mask_.byte_ = 0x00;
-	control_.byte_ = 0x00;
-	loopy_v_.byte_ = 0x0000;
-	loopy_t_.byte_ = 0x0000;
 
 	sprite_zero_hit_ = false;
 	sprite_zero_being_rendered_ = false;
+	is_frame_complete_ = false;
+	std::memset(video_buffer_, 0x00, 256 * 240 * sizeof(uint32_t));
 }
 
 bool PPU2C02::test_render_enable()

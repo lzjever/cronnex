@@ -23,7 +23,7 @@ bool Mapper_000::prg_addr(uint16_t addr, uint32_t &mapped_addr)
 	//     0xC000 -> 0xFFFF: Mirror 0x0000 -> 0x3FFF
 	// if PRGROM is 32KB
 	//     CPU Address Bus          PRG ROM
-	//     0x8000 -> 0xFFFF: Map    0x0000 -> 0x7FFF	
+	//     0x8000 -> 0xFFFF: Map    0x0000 -> 0x7FFF
 	if (addr >= 0x8000 && addr <= 0xFFFF)
 	{
 		mapped_addr = addr & (prg_banks_num_ > 1 ? 0x7FFF : 0x3FFF);
