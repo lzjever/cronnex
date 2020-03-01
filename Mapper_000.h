@@ -12,6 +12,7 @@ public:
 public:
 	bool prg_addr(uint16_t addr, uint16_t &mapped_addr);
 	bool chr_addr(uint16_t addr, uint16_t &mapped_addr);
+
 	void reset() override;
 
 	// No local equipment required

@@ -164,11 +164,11 @@ public:
 	void clock();
 	void reset();
 
+	//cpu bus
 	bool register_read(uint16_t addr, uint8_t &data, bool read_only = false);
 	bool register_write(uint16_t addr, uint8_t data);
 
-	//read, write cart,pattern_table,palette_table,name_table.
-	uint16_t unmirror_nametable(uint16_t addr, uint8_t mirror);
+	//read, write on ppu bus: cart,pattern_table,palette_table,name_table.
 	bool read(uint16_t addr, uint8_t& data);
 	bool write(uint16_t addr, uint8_t data);
 

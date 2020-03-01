@@ -7,6 +7,12 @@
 class Mapper
 {
 public:
+	enum class MIRROR : uint8_t
+	{
+		flag_horizontal,
+		flag_vertical
+	};
+
 	Mapper(uint8_t prg_banks_num, uint8_t chr_banks_num);
 	bool copy_memory(uint16_t bank_id, uint8_t* origin, uint16_t data_size);
 	bool zero_memory(uint16_t bank_id, uint16_t data_size);
@@ -14,6 +20,7 @@ public:
 public:
 	virtual bool prg_addr(uint16_t addr, uint16_t &mapped_addr)	 = 0;
 	virtual bool chr_addr(uint16_t addr, uint16_t &mapped_addr)	 = 0;
+	virtual bool nt_addr(uint16_t addr, uint16_t&mapped_addr);
 
 	virtual bool prg_read(uint16_t addr, uint8_t& data) = 0;
 	virtual bool prg_write(uint16_t addr, uint8_t data) = 0;
@@ -22,6 +29,7 @@ public:
 
 	virtual void reset() = 0;
 
+	MIRROR mirror_type_;
 protected:
 	uint8_t prg_banks_num_ = 0;
 	uint8_t chr_banks_num_ = 0;

@@ -13,6 +13,7 @@ public:
 
 	bool prg_addr(uint16_t addr, uint16_t& mapped_addr);
 	bool chr_addr(uint16_t addr, uint16_t& mapped_addr);
+	bool nt_addr(uint16_t addr, uint16_t& mapped_addr);
 
 	bool prg_read(uint16_t addr, uint8_t& data);
 	bool prg_write(uint16_t addr, uint8_t data);
@@ -23,12 +24,6 @@ public:
 
 public:
 	bool is_valid();
-
-	enum MIRROR : uint8_t
-	{
-		flag_horizontal,
-		flag_vertical
-	} mirror_type_ = flag_horizontal;
 
 
 

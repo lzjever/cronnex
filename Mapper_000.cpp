@@ -83,11 +83,15 @@ bool Mapper_000::prg_write(uint16_t addr, uint8_t data)
 }
 bool Mapper_000::chr_read(uint16_t addr, uint8_t& data)
 {
+	if (addr > 0x1FFF)
+		return false;
 	data = memory_[0xff00][addr];
 	return true;
 }
 bool Mapper_000::chr_write(uint16_t addr, uint8_t data)
 {
+	if (addr > 0x1FFF)
+		return false;
 	memory_[0xff00][addr] = data;
 	return true;
 }
