@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include "Mapper.h"
 
 
@@ -9,10 +10,17 @@ public:
 	~Mapper_000();
 
 public:
-	bool prg_addr(uint16_t addr, uint32_t& mapped_addr);
-	bool chr_addr(uint16_t addr, uint32_t& mapped_addr);
+	bool prg_addr(uint16_t addr, uint16_t &mapped_addr);
+	bool chr_addr(uint16_t addr, uint16_t &mapped_addr);
 	void reset() override;
 
 	// No local equipment required
+
+public:
+	bool prg_read(uint16_t addr, uint8_t& data);
+	bool prg_write(uint16_t addr, uint8_t data);
+	bool chr_read(uint16_t addr, uint8_t& data);
+	bool chr_write(uint16_t addr, uint8_t data);
+
 };
 

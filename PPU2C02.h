@@ -80,12 +80,17 @@ public:
 			uint16_t fine_y : 3;
 			uint16_t unused : 1;
 		};
+		struct
+		{
+			uint16_t l : 8;
+			uint16_t h : 7;
+		};
 		uint16_t byte_ = 0x0000;
 	}loopy_v_, loopy_t_;
 	uint8_t fine_x_ = 0x00;
 	
 	//for 1 clock cycle delay
-	uint8_t address_latch_ = 0x00;
+	bool address_latch_ = false;
 	uint8_t ppu_data_buffer_ = 0x00;
 
 
@@ -159,7 +164,7 @@ public:
 	void clock();
 	void reset();
 
-	bool register_read(uint16_t addr, uint8_t &data);
+	bool register_read(uint16_t addr, uint8_t &data, bool read_only = false);
 	bool register_write(uint16_t addr, uint8_t data);
 
 	//read, write cart,pattern_table,palette_table,name_table.

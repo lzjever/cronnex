@@ -19,6 +19,7 @@ Bus::~Bus()
 bool Bus::write(uint16_t addr, uint8_t data)
 {	
 	bool ret = false;
+	cart_->prg_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		onboard_ram_[addr & 0x07FF] = data;
@@ -42,18 +43,23 @@ bool Bus::write(uint16_t addr, uint8_t data)
 		cycles_on_dma_ = 0;
 		ret = true;
 	}
-	else if (addr >= 0x4000 && addr <= 0x4020)
+	else if (addr >= 0x4000 && addr <= 0x401f)
 	{
+		/*
+		$4000 - $4017	$0018	NES APU and I / O registers
+		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
+		*/
 		ret = true;
 	}
-	//return true;
+
 	assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
 	return ret;
 }
 
-bool Bus::read(uint16_t addr, uint8_t &data)
+bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 {
 	bool ret = false;
+	cart_->prg_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		data = onboard_ram_[addr & 0x07FF];
@@ -61,7 +67,7 @@ bool Bus::read(uint16_t addr, uint8_t &data)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF)
 	{
-		ret = ppu_->register_read(addr, data);
+		ret = ppu_->register_read(addr, data, read_only);
 	}
 	else if (addr >= 0x4016 && addr <= 0x4017)
 	{
@@ -73,8 +79,6 @@ bool Bus::read(uint16_t addr, uint8_t &data)
 	{
 		ret = cart_->prg_read(addr, data);
 	}
-	//return true;
-
 	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
 	return ret;
 }

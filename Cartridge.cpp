@@ -35,19 +35,34 @@ Cartridge::Cartridge(const std::string& file_name)
 		if (std::memcmp(header_.name, "NES\x1a", 4) == 0) 
 		{
 			prg_banks_num_ = header_.prg_rom_chunks;
-			grp_memory_.resize(prg_banks_num_ * 16384);
-			file.read((char*)grp_memory_.data(), grp_memory_.size());
 			chr_banks_num_ = header_.chr_rom_chunks;
 			if (chr_banks_num_ == 0)
 			{
-				chr_memory_.resize(8192);
+				chr_banks_num_ = 1;
 			}
-			else
+			switch (mapper_ID_)
 			{
-				chr_memory_.resize(chr_banks_num_ * 8192);
+			case   0: mapper_ = std::make_shared<Mapper_000>(prg_banks_num_, chr_banks_num_); break;
+				//case   2: pMapper = std::make_shared<Mapper_002>(nPRGBanks, nCHRBanks); break;
 			}
-			file.read((char*)chr_memory_.data(), chr_memory_.size());
+
+			uint8_t * file_buff = (uint8_t*)malloc(1024*1024*4);	// 4M
+			size_t total_size = prg_banks_num_ * (size_t)0x4000 + chr_banks_num_ * (size_t)0x2000;
+			file.read((char*)file_buff, total_size);
+			uint8_t *file_buffer_end = file_buff;
+			for (size_t i = 0; i < prg_banks_num_; i++)
+			{
+				mapper_->copy_memory((uint16_t)i, file_buffer_end, 0x4000);
+				file_buffer_end += 0x4000;
+			}
+			//0x2000
+			for (size_t i = 0; i < chr_banks_num_; i++)
+			{
+				mapper_->copy_memory((uint16_t)i | 0xff00, file_buffer_end, 0x2000);
+				file_buffer_end += 0x2000;
+			}
 			is_rom_valid_ = true;
+			free(file_buff);
 		}
 		else
 		{
@@ -55,13 +70,6 @@ Cartridge::Cartridge(const std::string& file_name)
 			return;
 		}
 		file.close();
-
-
-		switch (mapper_ID_)
-		{
-		case   0: mapper_ = std::make_shared<Mapper_000>(prg_banks_num_, chr_banks_num_); break;
-			//case   2: pMapper = std::make_shared<Mapper_002>(nPRGBanks, nCHRBanks); break;
-		}
 	}
 
 }
@@ -76,52 +84,39 @@ bool Cartridge::is_valid()
 	return is_rom_valid_;
 }
 
+
+// ADDR
+bool Cartridge::prg_addr(uint16_t addr, uint16_t& mapped_addr)
+{
+	return mapper_->prg_addr(addr, mapped_addr);
+}
+
+bool Cartridge::chr_addr(uint16_t addr, uint16_t& mapped_addr)
+{
+	return mapper_->chr_addr(addr, mapped_addr);
+}
+////////////////////////////////////////////////////
+
+
+// DATA
 bool Cartridge::prg_read(uint16_t addr, uint8_t &data)
 {
-	uint32_t mapped_addr = 0;
-	if (mapper_->prg_addr(addr, mapped_addr))
-	{
-		data = grp_memory_[mapped_addr];
-		return true;
-	}
-	else
-		return false;
+	return mapper_->prg_read(addr, data);
 }
 
 bool Cartridge::prg_write(uint16_t addr, uint8_t data)
 {
-	uint32_t mapped_addr = 0;
-	if (mapper_->prg_addr(addr, mapped_addr))
-	{
-		grp_memory_[mapped_addr] = data;
-		return true;
-	}
-	else
-		return false;
+	return mapper_->prg_write(addr, data);
 }
 
 bool Cartridge::chr_read(uint16_t addr, uint8_t & data)
 {
-	uint32_t mapped_addr = 0;
-	if (mapper_->chr_addr(addr, mapped_addr))
-	{
-		data = chr_memory_[mapped_addr];
-		return true;
-	}
-	else
-		return false;
+	return mapper_->chr_read(addr, data);
 }
 
 bool Cartridge::chr_write(uint16_t addr, uint8_t data)
 {
-	uint32_t mapped_addr = 0;
-	if (mapper_->chr_addr(addr, mapped_addr))
-	{
-		chr_memory_[mapped_addr] = data;
-		return true;
-	}
-	else
-		return false;
+	return mapper_->chr_write(addr, data);
 }
 
 

@@ -39,7 +39,7 @@ uint32_t  PPU2C02::get_pixel_rgb(uint8_t palette, uint8_t pixel)
 	return rgb_colors_[data & 0x3F];
 }
 
-bool PPU2C02::register_read(uint16_t addr, uint8_t& data)
+bool PPU2C02::register_read(uint16_t addr, uint8_t& data, bool read_only)
 {
 	//addr >= 0x2000 && addr <= 0x3FFF
 	addr = addr & 0x0007;	//all are mirrors of the first 8 bytes.
@@ -49,9 +49,12 @@ bool PPU2C02::register_read(uint16_t addr, uint8_t& data)
 	case 0x0000: break;
 	case 0x0001: break;
 	case 0x0002:
-		data = (status_.byte_ & 0xE0) | (ppu_data_buffer_ & 0x1F);
-		status_.V = 0;
-		address_latch_ = 0;
+		data =(ppu_data_buffer_ & 0x1F) | (status_.byte_ & 0xE0);
+		if (!read_only)
+		{
+			status_.V = 0;
+			address_latch_ = 0;
+		}
 		break;
 	case 0x0003: break;
 	case 0x0004:
@@ -63,11 +66,15 @@ bool PPU2C02::register_read(uint16_t addr, uint8_t& data)
 	case 0x0007:
 		data = ppu_data_buffer_;
 		read(loopy_v_.byte_, ppu_data_buffer_);
-		if (loopy_v_.byte_ >= 0x3F00) data = ppu_data_buffer_;
-		loopy_v_.byte_ += (control_.I ? 32 : 1);
+		if (loopy_v_.byte_ >= 0x3F00) 
+			data = ppu_data_buffer_;
+		if (!read_only)
+		{
+			loopy_v_.byte_ += (control_.I ? 32 : 1);
+		}
 		break;
 	default:
-		return false;
+		return false; // impossible
 	}
 	return true;
 }
@@ -94,38 +101,36 @@ bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 		((uint8_t*)oam_)[oam_addr_] = data;
 		break;
 	case 0x0005: // Scroll
-		if (address_latch_ == 0)
+		if (!address_latch_)
 		{
 			fine_x_ = data & 0x07;
 			loopy_t_.coarse_x = data >> 3;
-			address_latch_ = 1;
 		}
 		else
 		{
 			loopy_t_.fine_y = data & 0x07;
 			loopy_t_.coarse_y = data >> 3;
-			address_latch_ = 0;
 		}
+		address_latch_ = !address_latch_;
 		break;
 	case 0x0006: // PPU Address
-		if (address_latch_ == 0)
+		if (!address_latch_)
 		{
-			loopy_t_.byte_ = (uint16_t)((data & 0x3F) << 8) | (loopy_t_.byte_ & 0x00FF);
-			address_latch_ = 1;
+			loopy_t_.h = data & 0x3F;
 		}
 		else
 		{
-			loopy_t_.byte_ = (loopy_t_.byte_ & 0xFF00) | data;
-			loopy_v_ = loopy_t_;
-			address_latch_ = 0;
+			loopy_t_.l = data;
+			loopy_v_.byte_ = loopy_t_.byte_; 
 		}
+		address_latch_ = !address_latch_;
 		break;
 	case 0x0007:
 		write(loopy_v_.byte_, data);
 		loopy_v_.byte_ += (control_.I ? 32 : 1);
 		break;
 	default:
-		return false;
+		return false; // impossible
 	}
 	return true;
 }
@@ -146,6 +151,7 @@ bool PPU2C02::read(uint16_t addr, uint8_t& data)
 {
 	data = 0x00;
 
+	cart_ptr_->chr_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 		return cart_ptr_->chr_read(addr, data);
 	else if (addr >= 0x2000 && addr <= 0x3EFF)
@@ -163,6 +169,7 @@ bool PPU2C02::read(uint16_t addr, uint8_t& data)
 
 bool PPU2C02::write(uint16_t addr, uint8_t data)
 {
+	cart_ptr_->chr_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 		return cart_ptr_->chr_write(addr, data);
 	else if (addr >= 0x2000 && addr <= 0x3EFF)
@@ -172,7 +179,6 @@ bool PPU2C02::write(uint16_t addr, uint8_t data)
 		if ((addr & 0x13) == 0x10)
 			addr &= ~0x10;
 		palette_table_[addr & 0x1F] = data;
-
 	}
 	else
 		return false;
