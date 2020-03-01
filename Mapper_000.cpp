@@ -39,15 +39,11 @@ bool Mapper_000::prg_addr(uint16_t addr, uint16_t &mapped_addr)
 }
 bool Mapper_000::chr_addr(uint16_t addr, uint16_t &mapped_addr)
 {
-	// There is no mapping required for PPU
-	// PPU Address Bus          CHR ROM
-	// 0x0000 -> 0x1FFF: Map    0x0000 -> 0x1FFF
-	if (addr >= 0x0000 && addr <= 0x1FFF)
-	{
-		mapped_addr = addr;
-		return true;
-	}
-	return false;
+	if (addr > 0x1FFF)
+		return false;	
+	mapped_addr = addr;
+	return true;
+
 }
 
 bool Mapper_000::prg_read(uint16_t addr, uint8_t& data)
@@ -57,7 +53,6 @@ bool Mapper_000::prg_read(uint16_t addr, uint8_t& data)
 	if (addr <= 0x7fff)
 	{
 		data = extend_space_[addr - 0x4020];
-		return true;
 	}
 	else // (addr >= 0x8000)
 	{

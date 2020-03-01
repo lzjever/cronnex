@@ -46,7 +46,6 @@ uint32_t* PPU2C02::get_video_buffer()
 }
 uint32_t  PPU2C02::get_pixel_rgb(uint8_t palette, uint8_t pixel)
 {
-
 	uint8_t data = 0;
 	read(0x3F00 + (palette << 2) + pixel, data);
 	return rgb_colors_[data & 0x3F];
@@ -152,13 +151,11 @@ bool PPU2C02::register_write(uint16_t addr, uint8_t data)
 bool PPU2C02::read(uint16_t addr, uint8_t& data)
 {
 	data = 0x00;
-
-	cart_ptr_->chr_addr(addr, addr);
-	if (cart_ptr_->chr_read(addr, data))
-		return true;
+	if (cart_ptr_->chr_addr(addr, addr))
+		return cart_ptr_->chr_read(addr, data);
 	else if (cart_ptr_->nt_addr(addr, addr))
 		data = name_table_[addr - 0x2000];
-	else if (addr >= 0x3F00 && addr <= 0x3FFF)
+	else if (addr >= 0x3F00 && addr <= 0x3FFF) // may write pt_addr in the future
 	{
 		if ((addr & 0x13) == 0x10)
 			addr &= ~0x10;
@@ -171,12 +168,11 @@ bool PPU2C02::read(uint16_t addr, uint8_t& data)
 
 bool PPU2C02::write(uint16_t addr, uint8_t data)
 {
-	cart_ptr_->chr_addr(addr, addr);
-	if (cart_ptr_->chr_write(addr, data))
-		return true;
+	if (cart_ptr_->chr_addr(addr, addr))
+		return cart_ptr_->chr_write(addr, data);
 	else if (cart_ptr_->nt_addr(addr, addr))
 		name_table_[addr - 0x2000] = data;
-	else if (addr >= 0x3F00 && addr <= 0x3FFF)
+	else if (addr >= 0x3F00 && addr <= 0x3FFF) // may write pt_addr in the future
 	{
 		if ((addr & 0x13) == 0x10)
 			addr &= ~0x10;
