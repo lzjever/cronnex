@@ -13,62 +13,77 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="boost">
+      <UniqueIdentifier>{484cb822-20ef-4f5f-b774-2b49058a8259}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bus.h">
+    <ClInclude Include="apu_snapshot.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Cartridge.h">
+    <ClInclude Include="blargg_common.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CPU6502.h">
+    <ClInclude Include="blargg_source.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Mapper.h">
+    <ClInclude Include="Blip_Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Mapper_000.h">
+    <ClInclude Include="Blip_Synth.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="olcPixelGameEngine.h">
+    <ClInclude Include="Multi_Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PPU2C02.h">
+    <ClInclude Include="Nes_Apu.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Common.h">
+    <ClInclude Include="Nes_Namco.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="APU2A03.h">
+    <ClInclude Include="Nes_Oscs.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Nes_Vrc6.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Nonlinear_Buffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="boost\config.hpp">
+      <Filter>boost</Filter>
+    </ClInclude>
+    <ClInclude Include="boost\cstdint.hpp">
+      <Filter>boost</Filter>
+    </ClInclude>
+    <ClInclude Include="boost\static_assert.hpp">
+      <Filter>boost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bus.cpp">
+    <ClCompile Include="apu_snapshot.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Cartridge.cpp">
+    <ClCompile Include="Blip_Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CPU6502.cpp">
+    <ClCompile Include="Multi_Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Mapper.cpp">
+    <ClCompile Include="Nes_Apu.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Mapper_000.cpp">
+    <ClCompile Include="Nes_Namco.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="olcPixelGameEngine.cpp">
+    <ClCompile Include="Nes_Oscs.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PPU2C02.cpp">
+    <ClCompile Include="Nes_Vrc6.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="APU2A03.cpp">
+    <ClCompile Include="Nonlinear_Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
