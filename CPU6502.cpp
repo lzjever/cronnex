@@ -1,6 +1,6 @@
 #include "CPU6502.h"
 #include "Bus.h"
-#include "common.h"
+#include "Common.h"
 
 
 CPU6502::CPU6502(uint16_t stack_base_addr):
