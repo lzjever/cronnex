@@ -2,19 +2,23 @@
 #include <cstdint>
 #include <memory>
 #include "Bus.h"
-#include "3rdpatry/NesSndEmu/Nes_Apu.h"
+#include "3rdparty/NesSndEmu/Nes_Apu.h"
+#include "3rdparty/NesSndEmu/Sound_Queue.h"
 
-namespace APU2A03
+class APU2A03
 {
-    Bus* bus_ptr;
-    Nes_Apu apu;
-    Blip_Buffer buf;
+public:
+    static Bus* bus_ptr;
+    static Nes_Apu apu;
+    static Blip_Buffer buf;
 
-    const int OUT_SIZE = 4096;
-    blip_sample_t outBuf[OUT_SIZE];
+    static const int OUT_SIZE = 4096;
+    static blip_sample_t outBuf[OUT_SIZE];
+
+    static Sound_Queue* soundQueue;
 
 
-    int dmc_read(void*, cpu_addr_t addr)
+    static int dmc_read(void*, cpu_addr_t addr)
     {
         uint8_t data;
         bus_ptr->read(addr, data);
@@ -22,23 +26,26 @@ namespace APU2A03
     }
 
 
-    void init(Bus* bus)
+    static void init(Bus* bus)
     {
         bus_ptr = bus;
         buf.sample_rate(96000);
         buf.clock_rate(1789773);
 
+        soundQueue = new Sound_Queue;
+        soundQueue->init(96000);
+
         apu.output(&buf);
         apu.dmc_reader(dmc_read);
     }
 
-    void reset()
+    static void reset()
     {
         apu.reset();
         buf.clear();
     }
 
-    bool register_write(int elapsed, uint16_t addr, uint8_t data)
+    static bool register_write(int elapsed, uint16_t addr, uint8_t data)
     {
         if (addr >= apu.start_addr && addr <= apu.end_addr)
         {
@@ -47,7 +54,7 @@ namespace APU2A03
         }
         return false;
     }
-    bool register_read(int elapsed, uint16_t addr, uint8_t data)
+    static bool register_read(int elapsed, uint16_t addr, uint8_t data)
     {
         if (addr == apu.status_addr)
         {
@@ -57,14 +64,17 @@ namespace APU2A03
         return false;
     }
 
-    void run_frame(int elapsed)
+    static void run_frame(int elapsed)
     {
         apu.end_frame(elapsed);
         buf.end_frame(elapsed);
 
         if (buf.samples_avail() >= OUT_SIZE)
             //GUI::new_samples(outBuf, buf.read_samples(outBuf, OUT_SIZE));
-        { }
+        {
+
+            soundQueue->write(outBuf, buf.read_samples(outBuf, OUT_SIZE));
+        }
     }
 
 };

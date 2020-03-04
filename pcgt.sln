@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcgt", "pcgt.vcxproj", "{69
 		{760F0DA0-345B-4CD1-BC56-4CFCFDEF6456} = {760F0DA0-345B-4CD1-BC56-4CFCFDEF6456}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NesSndEmu", "3rdpatry\NesSndEmu\NesSndEmu.vcxproj", "{760F0DA0-345B-4CD1-BC56-4CFCFDEF6456}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NesSndEmu", "3rdparty\NesSndEmu\NesSndEmu.vcxproj", "{760F0DA0-345B-4CD1-BC56-4CFCFDEF6456}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -24,15 +24,16 @@
     <ClInclude Include="blargg_source.h" />
     <ClInclude Include="Blip_Buffer.h" />
     <ClInclude Include="Blip_Synth.h" />
-    <ClInclude Include="boost\config.hpp" />
-    <ClInclude Include="boost\cstdint.hpp" />
-    <ClInclude Include="boost\static_assert.hpp" />
+    <ClInclude Include="boost_sub\config.hpp" />
+    <ClInclude Include="boost_sub\cstdint.hpp" />
+    <ClInclude Include="boost_sub\static_assert.hpp" />
     <ClInclude Include="Multi_Buffer.h" />
     <ClInclude Include="Nes_Apu.h" />
     <ClInclude Include="Nes_Namco.h" />
     <ClInclude Include="Nes_Oscs.h" />
     <ClInclude Include="Nes_Vrc6.h" />
     <ClInclude Include="Nonlinear_Buffer.h" />
+    <ClInclude Include="Sound_Queue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="apu_snapshot.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="Nes_Oscs.cpp" />
     <ClCompile Include="Nes_Vrc6.cpp" />
     <ClCompile Include="Nonlinear_Buffer.cpp" />
+    <ClCompile Include="Sound_Queue.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -121,6 +123,7 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>E:\works\pcgt\3rdparty</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,6 +143,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile />
+      <AdditionalIncludeDirectories>E:\works\pcgt\3rdparty</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

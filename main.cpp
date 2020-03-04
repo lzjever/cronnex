@@ -8,6 +8,7 @@
 #include "PPU2C02.h"
 #include "olcPixelGameEngine.h"
 
+
 class PCGT_Program : public olc::PixelGameEngine
 {
 public:
@@ -175,8 +176,11 @@ private:
 			else
 			{
 				fResidualTime += (1.0f / 60.0f) - fElapsedTime;
+				/*
 				do { nes->clock(); } while (!nes->ppu_->is_frame_complete_);
 				nes->ppu_->is_frame_complete_ = false;
+				*/
+				nes->run_frame();
 			}
 		}
 		else

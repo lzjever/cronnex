@@ -1,16 +1,20 @@
 #include "Bus.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"
+#include "APU2A03.h"
 #include "Cartridge.h"
 #include "Common.h"
 
 Bus::Bus()
 {
+	frame_cpu_cycles_left_ = one_frame_cpu_cycles_;
 	dma_page_index_ = 0x00;
 	dma_inpage_addr_ = 0x00;
 	dma_data_on_transfer_ = 0x00;
 	is_dma_mode_ = false;
 	cycles_on_dma_ = 0;
+
+	APU2A03::init(this);
 }
 Bus::~Bus()
 {
@@ -49,6 +53,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
+		APU2A03::register_write(elapsed(), addr, data);
 		ret = true;
 	}
 
@@ -78,6 +83,15 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 	else if (addr >= 0x4020)
 	{
 		ret = cart_->prg_read(addr, data);
+	}
+	else if (addr >= 0x4000 && addr <= 0x401f)
+	{
+		/*
+		$4000 - $4017	$0018	NES APU and I / O registers
+		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
+		*/
+		APU2A03::register_read(elapsed(), addr, data);
+		ret = true;
 	}
 	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
 	return ret;
@@ -128,6 +142,7 @@ void Bus::reset()
 	cycles_on_dma_ = 0;
 
 	total_cycles_ = 0;
+	frame_cpu_cycles_left_ = one_frame_cpu_cycles_;
 }
 
 bool Bus::dma()
@@ -159,6 +174,7 @@ void Bus::clock()
 		if(!dma())
 		{
 			cpu_->clock();
+			frame_cpu_cycles_left_--;
 		}
 	}
 	if (ppu_->on_nmi_)
@@ -167,4 +183,15 @@ void Bus::clock()
 		cpu_->nmi();
 	}
 	total_cycles_++;
+}
+
+
+void Bus::run_frame()
+{
+	frame_cpu_cycles_left_ += one_frame_cpu_cycles_;
+	while (frame_cpu_cycles_left_ >= 0)
+	{
+		clock();
+	}
+	APU2A03::run_frame(elapsed());
 }

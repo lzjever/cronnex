@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="boost">
+    <Filter Include="boost_sub">
       <UniqueIdentifier>{484cb822-20ef-4f5f-b774-2b49058a8259}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -51,14 +51,17 @@
     <ClInclude Include="Nonlinear_Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="boost\config.hpp">
-      <Filter>boost</Filter>
+    <ClInclude Include="boost_sub\config.hpp">
+      <Filter>boost_sub</Filter>
     </ClInclude>
-    <ClInclude Include="boost\cstdint.hpp">
-      <Filter>boost</Filter>
+    <ClInclude Include="boost_sub\cstdint.hpp">
+      <Filter>boost_sub</Filter>
     </ClInclude>
-    <ClInclude Include="boost\static_assert.hpp">
-      <Filter>boost</Filter>
+    <ClInclude Include="boost_sub\static_assert.hpp">
+      <Filter>boost_sub</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound_Queue.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +87,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Nonlinear_Buffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound_Queue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

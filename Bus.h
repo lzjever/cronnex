@@ -15,10 +15,12 @@ public:
 	
 	void reset();
 	void clock();
+	void run_frame();
 	bool read(uint16_t addr, uint8_t &data, bool read_only = false);
 	bool write(uint16_t addr, uint8_t data);
 	bool dma();
 
+	inline int elapsed() { return one_frame_cpu_cycles_ - frame_cpu_cycles_left_; }
 public:
 
 	//bus holds all device instance.
@@ -40,5 +42,9 @@ private:
 	uint8_t dma_data_on_transfer_ = 0x00;
 	bool is_dma_mode_;
 	uint32_t cycles_on_dma_;
+
+	//* NTSC frame timing is 29780.5 cycles if rendering is enabled during the 20th scanline
+	const int32_t one_frame_cpu_cycles_ = 29781;
+	int32_t frame_cpu_cycles_left_;
 };
 
