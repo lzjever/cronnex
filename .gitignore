@@ -7,7 +7,9 @@
 ########### My config ###########
 
 [Bb]uild/
+[Oo]utput/
 src/external
+!src/external/CMakeLists.txt
 
 #################################
 
