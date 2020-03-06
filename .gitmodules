@@ -2,9 +2,6 @@
 [submodule "src/external/doctest"]
 	path = src/external/doctest
 	url = https://github.com/onqtam/doctest.git
-[submodule "src/external/Nes_Snd_Emu"]
-	path = src/external/Nes_Snd_Emu
-	url = https://github.com/jamesathey/Nes_Snd_Emu.git
 [submodule "src/external/raylib"]
 	path = src/external/raylib
 	url = https://github.com/raysan5/raylib.git

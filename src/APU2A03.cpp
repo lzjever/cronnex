@@ -5,4 +5,4 @@ Nes_Apu APU2A03::apu;
 Blip_Buffer APU2A03::buf;
 
 blip_sample_t APU2A03::outBuf[OUT_SIZE];
-Sound_Queue* APU2A03::soundQueue = NULL;
+//Sound_Queue* APU2A03::soundQueue = NULL;

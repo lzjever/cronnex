@@ -3,7 +3,6 @@
 #include <memory>
 #include "Bus.h"
 #include "3rdparty/NesSndEmu/Nes_Apu.h"
-#include "3rdparty/NesSndEmu/Sound_Queue.h"
 
 class APU2A03
 {
@@ -15,7 +14,6 @@ public:
     static const int OUT_SIZE = 4096;
     static blip_sample_t outBuf[OUT_SIZE];
 
-    static Sound_Queue* soundQueue;
 
 
     static int dmc_read(void*, cpu_addr_t addr)
@@ -73,7 +71,7 @@ public:
             //GUI::new_samples(outBuf, buf.read_samples(outBuf, OUT_SIZE));
         {
 
-            soundQueue->write(outBuf, buf.read_samples(outBuf, OUT_SIZE));
+            //soundQueue->write(outBuf, buf.read_samples(outBuf, OUT_SIZE));
         }
     }
 
