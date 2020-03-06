@@ -1,24 +1,28 @@
-project( pcgt )
-cmake_minimum_required( VERSION 3.14 )
+cmake_minimum_required(VERSION 3.0)
+
+project(PCGT)
+
+set(PACKAGE ${PROJECT_NAME})
+set(PACKAGE_NAME ${PACKAGE})
+set(PACKAGE_VERSION_MAJOR "0")
+set(PACKAGE_VERSION_MINOR "1")
+set(PACKAGE_VERSION_PATCH "0")
+set(VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
+set(PACKAGE_VERSION ${VERSION})
+set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
+
+
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(BOOST_VERSION)
-set(BOOST_COMPONENTS filesystem)
 
-find_package(Boost ${BOOST_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-find_package(X11 REQUIRED)
+file(GLOB PCGT_SOURCES
+    "*.cpp"
+)
 
-
-add_subdirectory(3rdpatry/NesSndEmu)
-
-add_executable( ${PROJECT_NAME} Bus.cpp  Cartridge.cpp  CPU6502.cpp  main.cpp  Mapper_000.cpp  Mapper.cpp  olcPixelGameEngine.cpp  PPU2C02.cpp )
-target_link_libraries(${PROJECT_NAME}
-    ${X11_X11_LIB}
-    GL
-    pthread
-    png
-    Boost::boost
-    Boost::filesystem
-    nessndemu
-    )
+if (NOT TARGET raylib)
+  find_package(raylib 2.0 REQUIRED)
+endif()
+add_executable(${PROJECT_NAME} ${PCGT_SOURCES} )
+target_include_directories(${PROJECT_NAME} PUBLIC ${nes_snd_emu_includes})
+target_link_libraries(${PROJECT_NAME} Nes_Snd_Emu raylib)

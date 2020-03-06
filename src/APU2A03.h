@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <memory>
 #include "Bus.h"
-#include "3rdparty/NesSndEmu/Nes_Apu.h"
+#include "nes_apu/Nes_Apu.h"
 
 class APU2A03
 {
@@ -30,8 +30,6 @@ public:
         buf.sample_rate(96000);
         buf.clock_rate(1789773);
 
-        soundQueue = new Sound_Queue;
-        soundQueue->init(96000);
 
         apu.output(&buf);
         apu.dmc_reader(dmc_read);

@@ -4,6 +4,7 @@
 #ifndef BOOST_CONFIG_HPP
 #define BOOST_CONFIG_HPP
 
+#define BLARGG_USE_NAMESPACE 1
 #define BOOST_MINIMAL 1
 
 #define BLARGG_BEGIN_NAMESPACE( name )
