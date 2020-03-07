@@ -4,6 +4,7 @@
 #include "Bus.h"
 #include "nes_apu/Nes_Apu.h"
 
+
 class APU2A03
 {
 public:
@@ -14,6 +15,7 @@ public:
     static const int OUT_SIZE = 4096;
     static blip_sample_t outBuf[OUT_SIZE];
 
+    //static Sound_Queue* soundQueue;
 
 
     static int dmc_read(void*, cpu_addr_t addr)
@@ -30,6 +32,8 @@ public:
         buf.sample_rate(96000);
         buf.clock_rate(1789773);
 
+        //soundQueue = new Sound_Queue;
+        //soundQueue->init(96000);
 
         apu.output(&buf);
         apu.dmc_reader(dmc_read);
@@ -68,10 +72,9 @@ public:
         if (buf.samples_avail() >= OUT_SIZE)
             //GUI::new_samples(outBuf, buf.read_samples(outBuf, OUT_SIZE));
         {
-
-            //soundQueue->write(outBuf, buf.read_samples(outBuf, OUT_SIZE));
+            buf.read_samples(outBuf, OUT_SIZE);
+            //soundQueue->write(outBuf, );
         }
     }
 
 };
-

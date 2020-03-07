@@ -48,7 +48,13 @@ uint32_t  PPU2C02::get_pixel_rgb(uint8_t palette, uint8_t pixel)
 {
 	uint8_t data = 0;
 	read(0x3F00 + (palette << 2) + pixel, data);
-	return rgb_colors_[data & 0x3F];
+	uint32_t abgr = rgb_colors_[data & 0x3F] << 8 | 0xff;
+
+	return (abgr << 24) | ((abgr & 0xFF00) << 8) |
+		((abgr & 0xFF0000) >> 8) | (abgr >> 24);
+
+
+	//return rgb_colors_[data & 0x3F]<<2 | 0xff;
 }
 
 bool PPU2C02::register_read(uint16_t addr, uint8_t& data, bool read_only)
@@ -639,8 +645,8 @@ void PPU2C02::clock()
 
 
 	int x, y;
-	x = cycle_ - 1;
-	y = scanline_;
+	x = cycle_ - 1 ;
+	y = 240 - scanline_;
 	if (x < 256 && y < 240 && x >= 0 && y >= 0)
 		video_buffer_[y * 256 + x] = get_pixel_rgb(palette, pixel);
 
