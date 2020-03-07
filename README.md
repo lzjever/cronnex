@@ -1,2 +1,2 @@
-# pcgt
-pcgt stands for 'play console games together'
+# cronnex
+cronnex stands for 'play console games together'
