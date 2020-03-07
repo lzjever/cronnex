@@ -14,6 +14,7 @@ int main(void)
     const int screenWidth = 256;
     const int screenHeight = 240;
     InitWindow(screenWidth, screenHeight, "Cronnex Gameplay");
+    SetTraceLogLevel(LOG_ERROR);
 
     std::shared_ptr<Bus> nes;
     std::shared_ptr<Cartridge> cart;
@@ -54,10 +55,14 @@ int main(void)
         nes->run_frame();
         Image screen_img = LoadImagePro(nes->ppu_->get_video_buffer(), screenWidth, screenHeight, UNCOMPRESSED_R8G8B8A8);
         Texture2D texture_screen = LoadTextureFromImage(screen_img);
+        UnloadImage(screen_img);
 
         BeginTextureMode(target);
             DrawTextureRec(texture_screen, (Rectangle) { 0.0f, 0.0f, (float)target.texture.width, (float)-target.texture.height }, (Vector2) { 0.0f, 0.0f }, WHITE);
         EndTextureMode();
+
+        UnloadTexture(texture_screen);
+
 
         BeginDrawing();
             //DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
