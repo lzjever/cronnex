@@ -3,6 +3,16 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+########### My config ###########
+
+[Bb]uild/
+[Oo]utput/
+!src/external
+!src/external/CMakeLists.txt
+
+#################################
+
 # User-specific files
 *.rsuser
 *.suo
