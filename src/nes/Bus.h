@@ -4,6 +4,7 @@
 class Cartridge;
 class PPU2C02;
 class CPU6502;
+class APU2A03;
 class Bus
 {
 public:
@@ -12,6 +13,7 @@ public:
 	bool insert_cartridge(std::shared_ptr<Cartridge> cartridge);
 	bool connect_cpu(std::shared_ptr<CPU6502> cpu);
 	bool connect_ppu(std::shared_ptr<PPU2C02> ppu);
+	bool connect_apu(std::shared_ptr<APU2A03> apu);
 	
 	void reset();
 	void clock();
@@ -27,7 +29,8 @@ public:
 	std::shared_ptr<CPU6502> cpu_;
 	//the ppu exposes eight memory-mapped registers, $2000 through $2007,
 	//but because they're incompletely decoded, they're mirrored in every 8 bytes from $2008 through $3FFF
-	std::shared_ptr<PPU2C02> ppu_;		
+	std::shared_ptr<PPU2C02> ppu_;
+	std::shared_ptr<APU2A03> apu_;
 	std::shared_ptr<Cartridge> cart_;
 
 	uint8_t onboard_ram_[0x0800]; // 2k onboard ram(8k addr map to 2k).  //addr >= 0x0000 && addr <= 0x1FFF

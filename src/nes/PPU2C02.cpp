@@ -646,7 +646,7 @@ void PPU2C02::clock()
 
 	int x, y;
 	x = cycle_ - 1 ;
-	y = 240 - scanline_;
+	y = scanline_;
 	if (x < 256 && y < 240 && x >= 0 && y >= 0)
 		video_buffer_[y * 256 + x] = get_pixel_rgb(palette, pixel);
 

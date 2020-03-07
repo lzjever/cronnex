@@ -14,7 +14,6 @@ Bus::Bus()
 	is_dma_mode_ = false;
 	cycles_on_dma_ = 0;
 
-	APU2A03::init(this);
 }
 Bus::~Bus()
 {
@@ -53,7 +52,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		APU2A03::register_write(elapsed(), addr, data);
+		apu_->register_write(elapsed(), addr, data);
 		ret = true;
 	}
 
@@ -90,7 +89,7 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		APU2A03::register_read(elapsed(), addr, data);
+		apu_->register_read(elapsed(), addr, data);
 		ret = true;
 	}
 	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
@@ -125,6 +124,17 @@ bool Bus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
 	}
 	ppu_ = ppu;
 	ppu_->connect_bus(this);
+	return true;
+}
+
+bool Bus::connect_apu(std::shared_ptr<APU2A03> apu)
+{
+	if (!apu)
+	{
+		return false;
+	}
+	apu_ = apu;
+	apu_->connect_bus(this);
 	return true;
 }
 
@@ -193,5 +203,5 @@ void Bus::run_frame()
 	{
 		clock();
 	}
-	APU2A03::run_frame(elapsed());
+	apu_->run_frame(elapsed());
 }
