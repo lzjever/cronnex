@@ -9,7 +9,7 @@ Initially, it's just an expierment for adding a better netplay mechanism to an e
 Later on, I decided to make this project a serious one.
 
 Currently this emulator is under heavy development. 
-Supporting on NES games is a WIP.
+Supporting NES games is a WIP.
 Developing the GUI is a WIP.
 
 
