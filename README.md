@@ -1,6 +1,7 @@
-# cronnex
+cronnex
+======
 
-# What is it
+## What is it
 cronnex is yet another video game console emulator aims to run NES, SNES, MD, PS1 games.
 
 The project was planned and initiated during the two-week quarantine for COVID-19.
@@ -13,6 +14,13 @@ Supporting NES games is a WIP.
 Developing the GUI is a WIP.
 
 
-## release plan
+## Release plan
 The first playable version will be released in mid-April 2020.
 
+
+## References and credits
+- [OneLoneCoder](https://github.com/OneLoneCoder)'s fantastic NES emulator example: https://github.com/OneLoneCoder/olcNES 
+- blargg's APU implementation NesSndEmu: http://blargg.8bitalley.com/libs/audio.html#Nes_Snd_Emu
+- NES hardware information and guidelines: http://nesdev.com
+- Game-dev library Raylib: https://github.com/raysan5/raylib
+- Mike Chambers' fake6502: http://rubbermallet.org/fake6502.c
