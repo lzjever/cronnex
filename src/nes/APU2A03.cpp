@@ -28,7 +28,7 @@ void APU2A03::reset()
 int APU2A03::on_dmc_read(cpu_addr_t addr)
 {
     uint8_t data;
-    bus_ptr->read(addr, data);
+    bus_ptr_->read(addr, data);
     return data;
 }
 

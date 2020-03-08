@@ -22,11 +22,10 @@ public:
 
 public:
 
-    Bus* bus_ptr;
+    Bus* bus_ptr_;
     Nes_Apu apu;
     Blip_Buffer buf;
     blip_sample_t outBuf[SAMPLE_OUT_SIZE];
-    Bus* bus_ptr_;
     std::function<bool(int16_t*, int32_t)>  sample_callback_;
 
 };
