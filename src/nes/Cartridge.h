@@ -7,7 +7,7 @@ using namespace std;
 class Cartridge
 {
 public:
-	Cartridge(const std::string& file_name);
+	Cartridge(std::string file_name);
 	~Cartridge();
 
 

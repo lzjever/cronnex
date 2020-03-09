@@ -9,7 +9,7 @@
 #include <memory>
 #include <list>
 #include <vector>
-
+#include <string>
 
 
 // NOTE: Gamepad name ID depends on drivers and OS
@@ -37,8 +37,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 256*4; //1024
-    const int screenHeight = 240*4; //960
+    const int screenWidth = 256; //1024
+    const int screenHeight = 240; //960
     SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
 
     InitWindow(screenWidth, screenHeight, "Cronnex Gameplay");
@@ -54,7 +54,8 @@ int main(void)
 
 
     std::shared_ptr<Bus> nes = std::make_shared<Bus>();
-    std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>("E:\\works\\test_bin\\Ice Climber (JE).nes");
+    std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
+        std::string("../test_bin/Ice Climber (JE).nes") );
 
     nes->connect_cpu(std::make_shared<CPU6502>());
     nes->connect_ppu(std::make_shared<PPU2C02>());

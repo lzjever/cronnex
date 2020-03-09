@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstring>
 
-Cartridge::Cartridge(const std::string& file_name)
+Cartridge::Cartridge(std::string file_name)
 {
 	// iNES Format Header
 	struct RomHeader
