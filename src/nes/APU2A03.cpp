@@ -55,9 +55,10 @@ void APU2A03::run_frame(int elapsed)
 {
     apu.end_frame(elapsed);
     buf.end_frame(elapsed);
-
     if (buf.samples_avail() >= SAMPLE_OUT_SIZE)
     {
         sample_callback_((int16_t*)outBuf, (int32_t)buf.read_samples(outBuf, SAMPLE_OUT_SIZE));
     }
 }
+
+

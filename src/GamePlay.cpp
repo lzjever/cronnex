@@ -26,9 +26,18 @@ bool sound_sample_callback(int16_t* data, int32_t data_size)
 {
     TraceLog(LOG_INFO,"Sound sample has arrived, size : %d . ", data_size);
 
-    vector<int16_t> sample_in(data_size);
-    std::memcpy(sample_in.data(), data, data_size * sizeof(int16_t));
-    sound_buffer.push_back(sample_in);
+
+    if (IsAudioStreamProcessed(stream) && (sound_buffer.size() == 0))
+    {
+        UpdateAudioStream(stream, data, data_size);
+    }
+    else
+    {
+        vector<int16_t> sample_in(data_size);
+        std::memcpy(sample_in.data(), data, data_size * sizeof(int16_t));
+        sound_buffer.push_back(sample_in);
+    }
+
 
     return true;
 }

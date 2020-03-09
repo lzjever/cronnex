@@ -16,13 +16,13 @@ public:
 	bool connect_apu(std::shared_ptr<APU2A03> apu);
 	
 	void reset();
-	void clock();
+	bool clock();
 	void run_frame();
 	bool read(uint16_t addr, uint8_t &data, bool read_only = false);
 	bool write(uint16_t addr, uint8_t data);
 	bool dma();
 
-	inline int elapsed() { return one_frame_cpu_cycles_ - frame_cpu_cycles_left_; }
+	int current_frame_elapsed();
 public:
 
 	//bus holds all device instance.
@@ -40,14 +40,13 @@ private:
 	uint8_t controller_state_[2];
 
 	//variables for DMA
-	uint8_t dma_page_index_ = 0x00;
-	uint8_t dma_inpage_addr_ = 0x00;
-	uint8_t dma_data_on_transfer_ = 0x00;
+	uint8_t dma_page_index_;
+	uint8_t dma_inpage_addr_;
+	uint8_t dma_data_on_transfer_;
 	bool is_dma_mode_;
 	uint32_t cycles_on_dma_;
 
-	//* NTSC frame timing is 29780.5 cycles if rendering is enabled during the 20th scanline
-	const int32_t one_frame_cpu_cycles_ = 29781;
-	int32_t frame_cpu_cycles_left_;
+	int32_t	current_frame_cpu_cycles_; // count cycles in a frame.
+
 };
 

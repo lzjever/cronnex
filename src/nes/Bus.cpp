@@ -7,12 +7,13 @@
 
 Bus::Bus()
 {
-	frame_cpu_cycles_left_ = one_frame_cpu_cycles_;
+	total_cycles_ = 0;
 	dma_page_index_ = 0x00;
 	dma_inpage_addr_ = 0x00;
 	dma_data_on_transfer_ = 0x00;
 	is_dma_mode_ = false;
 	cycles_on_dma_ = 0;
+	current_frame_cpu_cycles_ = 0;
 
 }
 Bus::~Bus()
@@ -52,7 +53,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		apu_->register_write(elapsed(), addr, data);
+		apu_->register_write(current_frame_elapsed(), addr, data);
 		ret = true;
 	}
 
@@ -89,7 +90,7 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		apu_->register_read(elapsed(), addr, data);
+		apu_->register_read(current_frame_elapsed(), addr, data);
 		ret = true;
 	}
 	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
@@ -145,14 +146,14 @@ void Bus::reset()
 	ppu_->reset();
 
 
+	total_cycles_ = 0;
 	dma_page_index_ = 0x00;
 	dma_inpage_addr_ = 0x00;
 	dma_data_on_transfer_ = 0x00;
 	is_dma_mode_ = false;
 	cycles_on_dma_ = 0;
 
-	total_cycles_ = 0;
-	frame_cpu_cycles_left_ = one_frame_cpu_cycles_;
+	current_frame_cpu_cycles_ = 0;
 }
 
 bool Bus::dma()
@@ -175,7 +176,7 @@ bool Bus::dma()
 	return true;
 }
 
-void Bus::clock()
+bool Bus::clock()
 {
 	//todo: check cpu ppu cart
 	ppu_->clock();
@@ -184,8 +185,8 @@ void Bus::clock()
 		if(!dma())
 		{
 			cpu_->clock();
-			frame_cpu_cycles_left_--;
 		}
+		current_frame_cpu_cycles_ ++;
 	}
 	if (ppu_->on_nmi_)
 	{
@@ -193,15 +194,33 @@ void Bus::clock()
 		cpu_->nmi();
 	}
 	total_cycles_++;
+
+	if(ppu_->is_frame_complete_ == true)
+	{
+		apu_->run_frame(current_frame_elapsed());
+		std::cout << current_frame_cpu_cycles_ << std::endl;
+		current_frame_cpu_cycles_ = 0;
+		ppu_->is_frame_complete_ = false;  //new frame
+		return true;
+	}
+	return false;
+
 }
 
-
+int Bus::current_frame_elapsed() 
+{ 
+	return current_frame_cpu_cycles_; 
+}
 void Bus::run_frame()
 {
+	while (!clock()){}
+
+	/*
 	frame_cpu_cycles_left_ += one_frame_cpu_cycles_;
 	while (frame_cpu_cycles_left_ >= 0)
 	{
 		clock();
 	}
 	apu_->run_frame(elapsed());
+	*/
 }
