@@ -2,14 +2,15 @@ cronnex
 ======
 
 ## What is it
-cronnex is yet another video game console emulator aims to run NES, SNES, MD, PS1 games.
+cronnex is yet another video game console emulator that aims to run NES, SNES, MD, PS1 games.
 
-The project was planned and initiated during the two-week quarantine for COVID-19.
-Initially, it's just an expierment for adding a better netplay mechanism to an existing emulator, and provides APIs for my Q-learning project.
+The project was planned and initiated in the two-week quarantine due to coronavirus. 
+It's just a toy for dealing with boredom initially. However, I decided to make this project a serious one later on.
 
-Later on, I decided to make this project a serious one.
+A decent netplay mechanism is planned. 
+Will provide APIs for machine learning experiments and AI algorithm development. 
 
-Currently this emulator is under heavy development. 
+Currently, this emulator is under heavy development. 
 Supporting NES games is a WIP.
 Developing the GUI is a WIP.
 
