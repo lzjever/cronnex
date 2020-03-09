@@ -198,7 +198,6 @@ bool Bus::clock()
 	if(ppu_->is_frame_complete_ == true)
 	{
 		apu_->run_frame(current_frame_elapsed());
-		std::cout << current_frame_cpu_cycles_ << std::endl;
 		current_frame_cpu_cycles_ = 0;
 		ppu_->is_frame_complete_ = false;  //new frame
 		return true;
@@ -214,13 +213,4 @@ int Bus::current_frame_elapsed()
 void Bus::run_frame()
 {
 	while (!clock()){}
-
-	/*
-	frame_cpu_cycles_left_ += one_frame_cpu_cycles_;
-	while (frame_cpu_cycles_left_ >= 0)
-	{
-		clock();
-	}
-	apu_->run_frame(elapsed());
-	*/
 }

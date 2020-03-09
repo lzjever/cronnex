@@ -5,7 +5,7 @@ APU2A03::APU2A03(std::function<bool(int16_t*, int32_t)>  sample_callback)
     :sample_callback_(sample_callback)
 {
     //std::function<bool(int16_t, int32_t)> callback_sample_out
-    buf.sample_rate(44100);
+    buf.sample_rate(96000);
     buf.clock_rate(1789773);
 
     apu.output(&buf);

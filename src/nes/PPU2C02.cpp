@@ -34,6 +34,9 @@ PPU2C02::PPU2C02()
 	  0xF8D878, 0xD8F878, 0xB8F8B8, 0xB8F8D8, 0x00FCFC, 0xD8D8D8, 0x000000, 0x000000
 	}
 {
+	on_nmi_ = false;
+	bus_ptr_ = NULL;
+	cart_ptr_ = NULL;
 }
 
 PPU2C02::~PPU2C02()

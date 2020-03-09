@@ -46,34 +46,34 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 256; //1024
-    const int screenHeight = 240; //960
+    const int screenWidth = 256*4; //1024
+    const int screenHeight = 240*4; //960
     SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
 
     InitWindow(screenWidth, screenHeight, "Cronnex Gameplay");
-    SetTraceLogLevel(LOG_INFO);
+    SetTraceLogLevel(LOG_ERROR);
 
     InitAudioDevice();
     if (IsAudioDeviceReady())
     {
         SetMasterVolume(1.0f);
     }
-    stream = InitAudioStream(44100, 16, 1);
+    stream = InitAudioStream(96000, 16, 1);
     PlayAudioStream(stream);
 
 
     std::shared_ptr<Bus> nes = std::make_shared<Bus>();
-    std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
-        std::string("../test_bin/Ice Climber (JE).nes") );
 
     nes->connect_cpu(std::make_shared<CPU6502>());
     nes->connect_ppu(std::make_shared<PPU2C02>());
     nes->connect_apu(std::make_shared<APU2A03>(sound_sample_callback));
 
+
+    // Insert cart into NES
+    std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
+        std::string("../test_bin/Ice Climber (JE).nes"));
     if (!cart->is_valid())
         return false;
-
-    // Insert into NES
     nes->insert_cartridge(cart);
 
     // Reset NES
@@ -95,6 +95,48 @@ int main(void)
             UpdateAudioStream(stream, sample_in.data(), sample_in.size());
             sound_buffer.pop_front();
         }
+
+        if (IsKeyPressed(KEY_R))
+        {
+            nes->reset();
+        }
+        if (IsKeyPressed(KEY_ONE))
+        {
+            cart = std::make_shared<Cartridge>(
+                std::string("../test_bin/Ice Climber (JE).nes"));
+            if (!cart->is_valid())
+                return false;
+            nes->insert_cartridge(cart);
+            nes->reset();
+        }
+        if (IsKeyPressed(KEY_TWO))
+        {
+            cart = std::make_shared<Cartridge>(
+                std::string("../test_bin/Donkey Kong (JU).nes"));
+            if (!cart->is_valid())
+                return false;
+            nes->insert_cartridge(cart);
+            nes->reset();
+        }
+        if (IsKeyPressed(KEY_THREE))
+        {
+            cart = std::make_shared<Cartridge>(
+                std::string("../test_bin/Super Mario Bros (J).nes"));
+            if (!cart->is_valid())
+                return false;
+            nes->insert_cartridge(cart);
+            nes->reset();
+        }
+        if (IsKeyPressed(KEY_FOUR))
+        {
+            cart = std::make_shared<Cartridge>(
+                std::string("../test_bin/nestest.nes"));
+            if (!cart->is_valid())
+                return false;
+            nes->insert_cartridge(cart);
+            nes->reset();
+        }
+
 
         nes->controller_[0] = 0x00;
         nes->controller_[0] |= IsKeyDown(KEY_K) ? 0x80 : 0x00;      //A
@@ -134,8 +176,6 @@ int main(void)
                 (Rectangle) { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight },
                 (Vector2) { 0.0f, 0.0f }, 0.0f, WHITE);
         EndDrawing();
-
-        nes->ppu_->is_frame_complete_ = false;
     }
 
     UnloadRenderTexture(target);    // Unload render texture

@@ -702,36 +702,45 @@ void CPU6502::tya()
 
 void CPU6502::slo()
 {
-	nop();
+	asl();
+	ora();
 }
 void CPU6502::rla()
 {
-	nop();
+	rol();
+	and_();
 }
 void CPU6502::sre()
 {
-	nop();
+	lsr();
+	eor();
 }
 void CPU6502::rra()
 {
-	nop();
+	ror();
+	adc();
 }
 
 void CPU6502::sax()
 {
-	nop();
+	sta();
+	stx();
+	put(a_ & x_);
 }
 void CPU6502::lax()
 {
-	nop();
+	lda();
+	ldx();
 }
 void CPU6502::dcp()
 {
-	nop();
+	dec();
+	cmp();
 }
 void CPU6502::isb()
 {
-	nop();
+	inc();
+	sbc();
 }
 
 
