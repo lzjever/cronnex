@@ -1,5 +1,4 @@
 #pragma once
-
 #include<cstdint>
 //#define CPU_SUPPORT_DECIMAL 1
 //#define EMULATE_UNOFFICIAL_OP 1

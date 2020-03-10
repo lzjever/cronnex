@@ -1,6 +1,7 @@
 #include "CPU6502.h"
 #include "Bus.h"
 #include "Common.h"
+#include <doctest/doctest.h>
 
 
 CPU6502::CPU6502(uint16_t stack_base_addr):
@@ -810,4 +811,14 @@ char* CPU6502::cpu_status()
 		status_ & flag_break ? "B" : ".", status_ & flag_decimal ? "D" : ".", status_ & flag_interrupt ? "I" : ".",
 		status_ & flag_zero ? "Z" : ".", status_ & flag_carry ? "C" : ".", sp_);
 	return cpu_status_buffer_;
+}
+
+
+int factorial(int number) { return number <= 1 ? number : factorial(number - 1) * number; }
+
+TEST_CASE("testing the factorial function") {
+	CHECK(factorial(1) == 1);
+	CHECK(factorial(2) == 2);
+	CHECK(factorial(3) == 6);
+	CHECK(factorial(10) == 3628800);
 }
