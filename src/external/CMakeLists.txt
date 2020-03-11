@@ -13,6 +13,5 @@ add_subdirectory(raylib)
 add_subdirectory(doctest)
 
 
-add_subdirectory(boost)
 
 add_subdirectory(Nes_Snd_Emu)
