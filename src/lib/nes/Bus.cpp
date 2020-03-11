@@ -1,9 +1,9 @@
+#include <common/Common.h>
 #include "Bus.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"
 #include "APU2A03.h"
 #include "Cartridge.h"
-#include "Common.h"
 
 Bus::Bus()
 {
