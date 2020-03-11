@@ -12,4 +12,7 @@ add_subdirectory(raylib)
 #set(DOCTEST_NO_INSTALL ON CACHE BOOL "Skip the installation process")
 add_subdirectory(doctest)
 
+
+add_subdirectory(boost)
+
 add_subdirectory(Nes_Snd_Emu)
