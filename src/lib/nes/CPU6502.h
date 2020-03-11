@@ -1,5 +1,6 @@
 #pragma once
 #include<cstdint>
+#include "config.h"
 //#define CPU_SUPPORT_DECIMAL 1
 //#define EMULATE_UNOFFICIAL_OP 1
 

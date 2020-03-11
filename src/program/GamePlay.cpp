@@ -10,6 +10,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <cstring>
 
 
 // NOTE: Gamepad name ID depends on drivers and OS

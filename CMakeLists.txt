@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
-project(cronnex VERSION 0.0.1 LANGUAGES CXX)
+project(cronnex VERSION 0.0.1)
 
-add_subdirectory(src/external)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 add_subdirectory(src)
-add_subdirectory(test)

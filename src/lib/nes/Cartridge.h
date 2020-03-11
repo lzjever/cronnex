@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include "config.h"
 #include "Mapper_000.h"
 
 using namespace std;

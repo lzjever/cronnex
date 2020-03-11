@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include "config.h"
+
 class Cartridge;
 class PPU2C02;
 class CPU6502;
