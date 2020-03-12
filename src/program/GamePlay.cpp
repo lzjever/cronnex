@@ -72,7 +72,7 @@ int main(void)
 
     // Insert cart into NES
     std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
-        std::string("../test_bin/Ice Climber (JE).nes"));
+        std::string("../../test_bin/Ice Climber (JE).nes"));
     if (!cart->is_valid())
         return false;
     nes->insert_cartridge(cart);
@@ -107,7 +107,7 @@ int main(void)
         if (IsKeyPressed(KEY_ONE))
         {
             cart = std::make_shared<Cartridge>(
-                std::string("../test_bin/Ice Climber (JE).nes"));
+                std::string("../../test_bin/Ice Climber (JE).nes"));
             if (!cart->is_valid())
                 return false;
             nes->insert_cartridge(cart);
@@ -116,7 +116,7 @@ int main(void)
         if (IsKeyPressed(KEY_TWO))
         {
             cart = std::make_shared<Cartridge>(
-                std::string("../test_bin/Donkey Kong (JU).nes"));
+                std::string("../../test_bin/Donkey Kong (JU).nes"));
             if (!cart->is_valid())
                 return false;
             nes->insert_cartridge(cart);
@@ -125,7 +125,7 @@ int main(void)
         if (IsKeyPressed(KEY_THREE))
         {
             cart = std::make_shared<Cartridge>(
-                std::string("../test_bin/Super Mario Bros (J).nes"));
+                std::string("../../test_bin/Super Mario Bros (J).nes"));
             if (!cart->is_valid())
                 return false;
             nes->insert_cartridge(cart);
@@ -134,7 +134,7 @@ int main(void)
         if (IsKeyPressed(KEY_FOUR))
         {
             cart = std::make_shared<Cartridge>(
-                std::string("../test_bin/nestest.nes"));
+                std::string("../../test_bin/nestest.nes"));
             if (!cart->is_valid())
                 return false;
             nes->insert_cartridge(cart);

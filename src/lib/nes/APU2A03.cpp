@@ -5,8 +5,7 @@
 APU2A03::APU2A03(std::function<bool(int16_t*, int32_t)>  sample_callback)
     :sample_callback_(sample_callback)
 {
-    //std::function<bool(int16_t, int32_t)> callback_sample_out
-    
+    // todo: fix buffer size error on linux
     buf.sample_rate(44100);
     buf.clock_rate(1789773);
 
