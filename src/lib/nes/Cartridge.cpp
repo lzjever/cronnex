@@ -49,7 +49,7 @@ Cartridge::Cartridge(std::string file_name)
 			mapper_->mirror_type_ = (header_.mapper1 & 0x01) ?
 				Mapper::MIRROR::flag_vertical : Mapper::MIRROR::flag_horizontal;
 
-			uint8_t * file_buff = (uint8_t*)malloc(1024*1024*4);	// 4M
+			uint8_t * file_buff = (uint8_t*)malloc(1024*1024*1);	// 4M
 			size_t total_size = prg_banks_num_ * (size_t)0x4000 + chr_banks_num_ * (size_t)0x2000;
 			file.read((char*)file_buff, total_size);
 			uint8_t *file_buffer_end = file_buff;

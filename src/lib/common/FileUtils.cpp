@@ -1,8 +1,5 @@
 #include <doctest/doctest.h>
-#include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
-#include <cstring>
-#include <boost/filesystem.hpp>
 #include "FileUtils.h"
 
 

@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <memory>
 #include <functional>
 #include "config.h"
 #include "Bus.h"

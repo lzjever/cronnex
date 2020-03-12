@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
-#include "config.h"
 
 
 class Mapper

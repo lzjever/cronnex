@@ -1,4 +1,4 @@
-#include <common/Common.h>
+#include <common/Assert.h>
 #include "Bus.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"

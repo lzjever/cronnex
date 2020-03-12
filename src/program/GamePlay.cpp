@@ -26,8 +26,6 @@ std::list<vector<int16_t> > sound_buffer;
 bool sound_sample_callback(int16_t* data, int32_t data_size)
 {
     TraceLog(LOG_INFO,"Sound sample has arrived, size : %d . ", data_size);
-
-
     if (IsAudioStreamProcessed(stream) && (sound_buffer.size() == 0))
     {
         UpdateAudioStream(stream, data, data_size);
@@ -47,28 +45,30 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 256*4; //1024
-    const int screenHeight = 240*4; //960
+    const int screenWidth = 256; //1024
+    const int screenHeight = 240; //960
     SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
 
     InitWindow(screenWidth, screenHeight, "Cronnex Gameplay");
-    SetTraceLogLevel(LOG_ERROR);
+    //SetTraceLogLevel(LOG_ERROR);
 
     InitAudioDevice();
     if (IsAudioDeviceReady())
     {
         SetMasterVolume(1.0f);
+        stream = InitAudioStream(44100, 16, 1);
+        PlayAudioStream(stream);
     }
-    stream = InitAudioStream(96000, 16, 1);
-    PlayAudioStream(stream);
-
+    TraceLog(LOG_INFO , "Audio device is ready.");
 
     std::shared_ptr<Bus> nes = std::make_shared<Bus>();
 
     nes->connect_cpu(std::make_shared<CPU6502>());
     nes->connect_ppu(std::make_shared<PPU2C02>());
     nes->connect_apu(std::make_shared<APU2A03>(sound_sample_callback));
+    TraceLog(LOG_INFO , "Finish setting up emulator console.");
 
+    //auto a = std::make_shared<APU2A03>(sound_sample_callback);
 
     // Insert cart into NES
     std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
@@ -80,6 +80,8 @@ int main(void)
     // Reset NES
     nes->reset();
 
+    TraceLog(LOG_INFO , "Finish setting up cartridge.");
+
     RenderTexture2D target = LoadRenderTexture(256, 240);
     SetTextureFilter(target.texture, FILTER_TRILINEAR);
     BeginTextureMode(target);
@@ -87,6 +89,7 @@ int main(void)
     EndTextureMode();
 
     SetTargetFPS(60);
+    TraceLog(LOG_INFO , "Start rendering game window.");
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         //update sound
@@ -152,7 +155,7 @@ int main(void)
        // while (!nes->ppu_->is_frame_complete_)
        //     nes->clock();
 
-        nes->run_frame();
+        //nes->run_frame();
 
 
         Image screen_img = LoadImagePro(nes->ppu_->get_video_buffer(), 256, 240, UNCOMPRESSED_R8G8B8A8);

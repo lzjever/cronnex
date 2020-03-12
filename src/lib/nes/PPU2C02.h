@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <cstdint>
 #include <memory>
-#include "config.h"
 
 
 class Bus;
