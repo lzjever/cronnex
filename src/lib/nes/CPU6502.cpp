@@ -816,9 +816,25 @@ char* CPU6502::cpu_status()
 
 
 
-
 //doctest
-TEST_CASE("CPU6502.instructions.6502_functional_test") 
+
+#ifndef DOCTEST_CONFIG_DISABLE
+class BusTestNesCPU6502
 {
-	CPU6502 cpu;
+public:
+	bool connect_cpu(std::shared_ptr<CPU6502> cpu)
+	{
+		cpu_ = cpu;
+	}
+	std::shared_ptr<CPU6502> cpu_;
+	uint8_t onboard_ram_[0xffff];	//64k
+};
+#endif
+
+TEST_SUITE("nes.cpu")
+{
+	TEST_CASE("CPU6502.instructions.6502_functional_test")
+	{
+		CPU6502 cpu;
+	}
 }

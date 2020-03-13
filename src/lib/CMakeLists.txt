@@ -17,12 +17,12 @@ add_library(cronnex_core_lib ${neslib_source} ${commonlib_source})
 add_library( ${PROJECT_NAME}::lib ALIAS cronnex_core_lib )
 target_compile_definitions(cronnex_core_lib PRIVATE DOCTEST_CONFIG_DISABLE)
 target_include_directories(cronnex_core_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(cronnex_core_lib Nes_Snd_Emu doctest )
+target_link_libraries(cronnex_core_lib Nes_Snd_Emu doctest ghc_filesystem)
 
 
 # for doctest
 add_library(cronnex_core_testlib OBJECT ${neslib_source} ${commonlib_source})
 add_library( ${PROJECT_NAME}::testlib ALIAS cronnex_core_testlib )
 target_include_directories(cronnex_core_testlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(cronnex_core_testlib Nes_Snd_Emu doctest )
+target_link_libraries(cronnex_core_testlib Nes_Snd_Emu doctest ghc_filesystem)
 
