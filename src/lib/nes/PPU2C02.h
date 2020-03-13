@@ -3,7 +3,7 @@
 #include <memory>
 
 
-class Bus;
+class Bus16Bits;
 class Cartridge;
 class PPU2C02
 {
@@ -159,7 +159,7 @@ public:
 	bool sprite_zero_being_rendered_;
 
 public:
-	void connect_bus(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
+	void connect_bus(Bus16Bits* bus_ptr) { bus_ptr_ = bus_ptr; }
 	void connect_cartridge(Cartridge* cart) { cart_ptr_ = cart; }
 	void clock();
 	void reset();
@@ -174,6 +174,6 @@ public:
 
 	bool on_nmi_ = false;
 	//devices
-	Bus* bus_ptr_;
+	Bus16Bits* bus_ptr_;
 	Cartridge* cart_ptr_;
 };

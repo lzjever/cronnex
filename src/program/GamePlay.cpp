@@ -1,7 +1,7 @@
 #pragma warning( disable : 4576)
 #pragma warning( disable : 4244)
 #include "raylib.h"
-#include "nes/Bus.h"
+#include "nes/NesBus.h"
 #include "nes/APU2A03.h"
 #include "nes/PPU2C02.h"
 #include "nes/CPU6502.h"
@@ -61,7 +61,7 @@ int main(void)
     }
     TraceLog(LOG_INFO , "Audio device is ready.");
 
-    std::shared_ptr<Bus> nes = std::make_shared<Bus>();
+    std::shared_ptr<NesBus> nes = std::make_shared<NesBus>();
 
     nes->connect_cpu(std::make_shared<CPU6502>());
     nes->connect_ppu(std::make_shared<PPU2C02>());

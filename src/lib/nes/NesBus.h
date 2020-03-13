@@ -1,16 +1,17 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include "Bus16Bits.h"
 
 class Cartridge;
 class PPU2C02;
 class CPU6502;
 class APU2A03;
-class Bus
+class NesBus: public Bus16Bits
 {
 public:
-	Bus();
-	~Bus();
+	NesBus();
+	~NesBus();
 	bool insert_cartridge(std::shared_ptr<Cartridge> cartridge);
 	bool connect_cpu(std::shared_ptr<CPU6502> cpu);
 	bool connect_ppu(std::shared_ptr<PPU2C02> ppu);
@@ -19,8 +20,8 @@ public:
 	void reset();
 	bool clock();
 	void run_frame();
-	bool read(uint16_t addr, uint8_t &data, bool read_only = false);
-	bool write(uint16_t addr, uint8_t data);
+	bool read(uint16_t addr, uint8_t &data, bool read_only = false) override;
+	bool write(uint16_t addr, uint8_t data)	override;
 	bool dma();
 
 	int current_frame_elapsed();

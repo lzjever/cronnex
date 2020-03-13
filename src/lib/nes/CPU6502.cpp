@@ -1,11 +1,13 @@
 #include <common/Assert.h>
 #include <doctest/doctest.h>
 #include "CPU6502.h"
-#include "Bus.h"
+#include "Bus16Bits.h"
 
 
-CPU6502::CPU6502(uint16_t stack_base_addr):
-	stack_base_addr_(stack_base_addr), bus_ptr_(NULL),
+CPU6502::CPU6502(bool decimal_mode_enabled):
+	stack_base_addr_(0x0100), 
+	bus_ptr_(NULL),
+	decimal_mode_enabled_(decimal_mode_enabled),
 	addr_table_{
 		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
 		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
@@ -259,12 +261,7 @@ void CPU6502::adc()
 	uint16_t result = v + a_ + ((status_ & flag_carry) ? 1 : 0);
 	test_zero(result);
 
-#ifdef CPU_SUPPORT_DECIMAL
-	bool decimal_mode_enabled = true;
-#else
-	bool decimal_mode_enabled = false;
-#endif
-	if ((status_ & flag_decimal) && decimal_mode_enabled)
+	if ((status_ & flag_decimal) && decimal_mode_enabled_)
 	{
 		if (((a_ & 0xf) + (v & 0xf) + ((status_ & flag_carry) ? 1 : 0)) > 0x0009) result += 0x0006;
 		test_sign(result);
@@ -296,12 +293,7 @@ void CPU6502::sbc()
 	(((a_ ^ result) & 0x80) && ((a_ ^ v) & 0x80)) ? 
 		status_ |= flag_overflow : status_ &= ~flag_overflow;
 
-#ifdef CPU_SUPPORT_DECIMAL
-	bool decimal_mode_enabled = true;
-#else
-	bool decimal_mode_enabled = false;
-#endif
-	if ((status_ & flag_decimal) && decimal_mode_enabled)
+	if ((status_ & flag_decimal) && decimal_mode_enabled_)
 	{
 		if (((a_ & 0x0f) - ((status_ & flag_carry) ? 0 : 1)) < (v & 0x0f)) result -= 0x0006;
 		if (result > 0x99)
@@ -819,22 +811,82 @@ char* CPU6502::cpu_status()
 //doctest
 
 #ifndef DOCTEST_CONFIG_DISABLE
-class BusTestNesCPU6502
+#include "common/FileUtils.h"
+class BusTestNesCPU6502 : public Bus16Bits
 {
 public:
 	bool connect_cpu(std::shared_ptr<CPU6502> cpu)
 	{
+		assert(cpu);
 		cpu_ = cpu;
+		cpu_->connect_bus(this);
+		return true;
 	}
+	bool read(uint16_t addr, uint8_t& data, bool read_only = false) override
+	{
+		data = onboard_ram_[addr];
+		return true;
+	}
+	bool write(uint16_t addr, uint8_t data)	override
+	{
+		onboard_ram_[addr] = data;
+		return true;
+	}
+	bool load_test_program(fs::path prog_path)
+	{
+		std::string s_prog;
+		bool is_loaded = load_file_simple(prog_path, s_prog);
+		if (is_loaded)
+		{
+			assert(s_prog.size() <= 0x10000);
+			std::memcpy(onboard_ram_, &s_prog[0], s_prog.size());
+		}
+		return is_loaded;
+	}
+
 	std::shared_ptr<CPU6502> cpu_;
-	uint8_t onboard_ram_[0xffff];	//64k
+	uint8_t onboard_ram_[0x10000];	//64k
 };
 #endif
 
 TEST_SUITE("nes.cpu")
 {
-	TEST_CASE("CPU6502.instructions.6502_functional_test")
+	TEST_CASE("instructions.6502_functional_test")
 	{
-		CPU6502 cpu;
+		std::shared_ptr<CPU6502> cpu6502 = std::make_shared<CPU6502>(true);
+		std::shared_ptr<BusTestNesCPU6502> bus_test = std::make_shared<BusTestNesCPU6502>();
+		bus_test->connect_cpu(cpu6502);
+		CHECK(bus_test->load_test_program("../../../test_bin/6502_functional_test.bin"));
+		cpu6502->pc_ = 0x0400;
+		size_t run_cycle = 125982689;
+		size_t i = 0;
+		for (; i < run_cycle; i++)
+		{
+			cpu6502->clock();
+			if (cpu6502->pc_ == 0x3469)
+				break;
+		}
+		CHECK(i < run_cycle);	// hit 0x3469, successul
+
+	}
+
+	TEST_CASE("instructions.65C02_extended_opcodes_test")
+	{
+		std::shared_ptr<CPU6502> cpu6502 = std::make_shared<CPU6502>(true);
+		std::shared_ptr<BusTestNesCPU6502> bus_test = std::make_shared<BusTestNesCPU6502>();
+		bus_test->connect_cpu(cpu6502);
+		CHECK(bus_test->load_test_program("../../../test_bin/65C02_extended_opcodes_test.bin"));
+		cpu6502->pc_ = 0x0400;
+		size_t run_cycle = 1125982689;
+		size_t i = 0;
+		for (; i < run_cycle; i++)
+		{
+			cpu6502->clock();
+			//if (cpu6502->pc_ == 0x3469)
+			//	break;
+		}
+		std::cout << cpu6502->pc_ << std::endl;
+		//CHECK(i < run_cycle);	// hit 0x3469, successul
+
 	}
 }

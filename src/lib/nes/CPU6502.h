@@ -3,13 +3,13 @@
 //#define CPU_SUPPORT_DECIMAL 1
 //#define EMULATE_UNOFFICIAL_OP 1
 
-class Bus;
+class Bus16Bits;
 class CPU6502
 {
 public:
 	using a = CPU6502;
-	CPU6502(uint16_t stack_base_addr = 0x0100);
-	void connect_bus(Bus* bus_ptr) { bus_ptr_ = bus_ptr; }
+	CPU6502(bool decimal_mode_enabled = false);
+	void connect_bus(Bus16Bits* bus_ptr) { bus_ptr_ = bus_ptr; }
 	void clock();
 	void reset();
 	void irq();
@@ -125,7 +125,8 @@ public:
 	uint8_t		penalty_op_, penalty_addr_;
 
 	//devices
-	Bus* bus_ptr_;
+	Bus16Bits* bus_ptr_;
+	bool decimal_mode_enabled_;
 
 private:
 	typedef void(CPU6502::* addr_ptr)(void);

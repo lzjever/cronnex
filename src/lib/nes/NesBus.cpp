@@ -1,11 +1,12 @@
 #include <common/Assert.h>
-#include "Bus.h"
+#include "NesBus.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"
 #include "APU2A03.h"
 #include "Cartridge.h"
 
-Bus::Bus()
+NesBus::NesBus()
+	:Bus16Bits()
 {
 	total_cycles_ = 0;
 	dma_page_index_ = 0x00;
@@ -16,11 +17,11 @@ Bus::Bus()
 	current_frame_cpu_cycles_ = 0;
 
 }
-Bus::~Bus()
+NesBus::~NesBus()
 {
 }
 
-bool Bus::write(uint16_t addr, uint8_t data)
+bool NesBus::write(uint16_t addr, uint8_t data)
 {	
 	bool ret = false;
 	cart_->prg_addr(addr, addr);
@@ -61,7 +62,7 @@ bool Bus::write(uint16_t addr, uint8_t data)
 	return ret;
 }
 
-bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
+bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 {
 	bool ret = false;
 	cart_->prg_addr(addr, addr);
@@ -97,7 +98,7 @@ bool Bus::read(uint16_t addr, uint8_t &data, bool read_only)
 	return ret;
 }
 
-bool Bus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
+bool NesBus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
 {
 	if (!cartridge->is_valid())
 	{
@@ -107,7 +108,7 @@ bool Bus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
 	ppu_->connect_cartridge(this->cart_.get());
 	return true;
 }
-bool Bus::connect_cpu(std::shared_ptr<CPU6502> cpu)
+bool NesBus::connect_cpu(std::shared_ptr<CPU6502> cpu)
 {
 	if (!cpu)
 	{
@@ -117,7 +118,7 @@ bool Bus::connect_cpu(std::shared_ptr<CPU6502> cpu)
 	cpu_->connect_bus(this);
 	return true;
 }
-bool Bus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
+bool NesBus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
 {
 	if (!ppu)
 	{
@@ -128,7 +129,7 @@ bool Bus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
 	return true;
 }
 
-bool Bus::connect_apu(std::shared_ptr<APU2A03> apu)
+bool NesBus::connect_apu(std::shared_ptr<APU2A03> apu)
 {
 	if (!apu)
 	{
@@ -139,7 +140,7 @@ bool Bus::connect_apu(std::shared_ptr<APU2A03> apu)
 	return true;
 }
 
-void Bus::reset()
+void NesBus::reset()
 {
 	cart_->reset();
 	cpu_->reset();
@@ -156,7 +157,7 @@ void Bus::reset()
 	current_frame_cpu_cycles_ = 0;
 }
 
-bool Bus::dma()
+bool NesBus::dma()
 {
 	if (!is_dma_mode_)
 		return false;
@@ -176,7 +177,7 @@ bool Bus::dma()
 	return true;
 }
 
-bool Bus::clock()
+bool NesBus::clock()
 {
 	//todo: check cpu ppu cart
 	ppu_->clock();
@@ -206,11 +207,11 @@ bool Bus::clock()
 
 }
 
-int Bus::current_frame_elapsed() 
+int NesBus::current_frame_elapsed() 
 { 
 	return current_frame_cpu_cycles_; 
 }
-void Bus::run_frame()
+void NesBus::run_frame()
 {
 	while (!clock()){}
 }
