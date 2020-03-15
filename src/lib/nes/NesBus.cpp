@@ -105,8 +105,8 @@ bool NesBus::insert_cartridge(std::shared_ptr<Cartridge> cartridge)
 	{
 		return false;
 	}
-	this->cart_ = cartridge;
-	ppu_->connect_cartridge(this->cart_.get());
+	cart_ = cartridge;
+	if(ppu_)ppu_->connect_cartridge(cart_.get());
 	return true;
 }
 bool NesBus::connect_cpu(std::shared_ptr<CPU6502> cpu)
@@ -127,6 +127,7 @@ bool NesBus::connect_ppu(std::shared_ptr<PPU2C02> ppu)
 	}
 	ppu_ = ppu;
 	ppu_->connect_bus(this);
+	if(cart_)ppu_->connect_cartridge(cart_.get());
 	return true;
 }
 
@@ -218,4 +219,80 @@ int NesBus::current_frame_elapsed()
 void NesBus::run_frame()
 {
 	while (!clock()){}
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//doctest
+#include <doctest/doctest.h>
+#include <memory>
+#include "nes/Cartridge.h"
+
+TEST_SUITE("nes.bus")
+{
+	TEST_CASE("read_write_basic")
+	{
+		std::shared_ptr<NesBus> nes = std::make_shared<NesBus>();
+		std::vector<uint8_t> data_write;
+		for(int i = 0; i < 256; i++)
+		{
+			data_write.push_back((uint8_t)i);
+			nes->write((uint16_t)i, (uint8_t)i);
+		}
+		uint8_t data_read;
+		nes->read(0, data_read);
+		CHECK(data_read == 0x00);
+		nes->read(1, data_read);
+		CHECK(data_read == 0x01);
+		nes->read(255, data_read);
+		CHECK(data_read == 0xff);
+	}
+
+	TEST_CASE("read_write_nestest_cartridge")
+	{
+		std::shared_ptr<NesBus> nes = std::make_shared<NesBus>();
+
+	    std::shared_ptr<Cartridge> cart = std::make_shared<Cartridge>(
+	        std::string("../../../test_bin/nestest.nes"));
+	    REQUIRE( cart->is_valid() );
+	    nes->insert_cartridge(cart);
+
+		uint8_t data_read;
+
+		for(int i = 0; i < 256; i++)
+		{
+			nes->write((uint16_t)i, (uint8_t)i);
+		}
+		nes->read(0, data_read);
+		CHECK(data_read == 0x00);
+		nes->read(1, data_read);
+		CHECK(data_read == 0x01);
+		nes->read(255, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x0800, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x1000, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x1800, data_read);
+		CHECK(data_read == 0xff);
+
+
+		for(int i = 0; i < 256; i++)
+		{
+			nes->write((uint16_t)i + 0x0800, (uint8_t)i);
+		}
+		nes->read(0, data_read);
+		CHECK(data_read == 0x00);
+		nes->read(1, data_read);
+		CHECK(data_read == 0x01);
+		nes->read(255, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x0800, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x1000, data_read);
+		CHECK(data_read == 0xff);
+		nes->read(255 + 0x1800, data_read);
+		CHECK(data_read == 0xff);
+	}
 }

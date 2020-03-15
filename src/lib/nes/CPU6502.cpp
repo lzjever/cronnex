@@ -1,5 +1,4 @@
 #include <common/Assert.h>
-#include <doctest/doctest.h>
 #include "CPU6502.h"
 #include "Bus16Bits.h"
 
@@ -808,9 +807,11 @@ char* CPU6502::cpu_status()
 
 
 
+///////////////////////////////////////////////////////////////////////////////
 //doctest
 #include <cstring>
 #include <memory>
+#include <doctest/doctest.h>
 #include "common/FileUtils.h"
 
 class BusTestNesCPU6502 : public Bus16Bits
