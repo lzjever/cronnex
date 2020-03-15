@@ -9,6 +9,5 @@ file(GLOB game_play_source
     "*.h"
 )
 
-add_definitions(-DDOCTEST_CONFIG_DISABLE)
 add_executable(${PROJECT_NAME}_gameplay ${game_play_source} )
-target_link_libraries(${PROJECT_NAME}_gameplay cronnex_core::lib raylib doctest)
+target_link_libraries(${PROJECT_NAME}_gameplay cronnex_core::lib raylib)

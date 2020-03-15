@@ -809,8 +809,8 @@ char* CPU6502::cpu_status()
 
 
 //doctest
-
-#ifndef DOCTEST_CONFIG_DISABLE
+#include <cstring>
+#include <memory>
 #include "common/FileUtils.h"
 class BusTestNesCPU6502 : public Bus16Bits
 {
@@ -847,7 +847,6 @@ public:
 	std::shared_ptr<CPU6502> cpu_;
 	uint8_t onboard_ram_[0x10000];	//64k
 };
-#endif
 
 TEST_SUITE("nes.cpu")
 {

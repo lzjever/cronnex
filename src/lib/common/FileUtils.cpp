@@ -1,12 +1,7 @@
-#if !(defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) )
-#if __has_include(<filesystem>)
-#include <ghc/fs_impl.hpp>
-#endif
-#endif
-
 #include <functional>
 #include <random>
 #include <doctest/doctest.h>
+#include <ghc/fs_impl.hpp>  // must before the fileutils.h
 #include "FileUtils.h"
 
 
