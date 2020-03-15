@@ -1,4 +1,5 @@
 #include <common/Assert.h>
+#include <cstring>
 #include "NesBus.h"
 #include "CPU6502.h"
 #include "PPU2C02.h"
@@ -16,6 +17,7 @@ NesBus::NesBus()
 	cycles_on_dma_ = 0;
 	current_frame_cpu_cycles_ = 0;
 
+
 }
 NesBus::~NesBus()
 {
@@ -24,7 +26,7 @@ NesBus::~NesBus()
 bool NesBus::write(uint16_t addr, uint8_t data)
 {	
 	bool ret = false;
-	cart_->prg_addr(addr, addr);
+	if(cart_)cart_->prg_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		onboard_ram_[addr & 0x07FF] = data;
@@ -37,7 +39,7 @@ bool NesBus::write(uint16_t addr, uint8_t data)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF) //to ppu memory-mapped registers.
 	{
-		ret = ppu_->register_write(addr, data);
+		ret = ppu_ ? ppu_->register_write(addr, data) : false;
 	}
 	else if (addr == 0x4014)
 	{
@@ -54,18 +56,17 @@ bool NesBus::write(uint16_t addr, uint8_t data)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		apu_->register_write(current_frame_elapsed(), addr, data);
-		ret = true;
+		ret = apu_ ? apu_->register_write(current_frame_elapsed(), addr, data) : false;
 	}
 
-	assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
+	//assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
 	return ret;
 }
 
 bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 {
 	bool ret = false;
-	cart_->prg_addr(addr, addr);
+	if(cart_)cart_->prg_addr(addr, addr);
 	if (addr >= 0x0000 && addr <= 0x1FFF)
 	{
 		data = onboard_ram_[addr & 0x07FF];
@@ -73,7 +74,7 @@ bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 	}
 	else if (addr >= 0x2000 && addr <= 0x3FFF)
 	{
-		ret = ppu_->register_read(addr, data, read_only);
+		ret = ppu_ ? ppu_->register_read(addr, data, read_only) : false;
 	}
 	else if (addr >= 0x4016 && addr <= 0x4017)
 	{
@@ -83,7 +84,7 @@ bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 	}
 	else if (addr >= 0x4020)
 	{
-		ret = cart_->prg_read(addr, data);
+		ret = cart_ ? cart_->prg_read(addr, data) : false;
 	}
 	else if (addr >= 0x4000 && addr <= 0x401f)
 	{
@@ -91,10 +92,10 @@ bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 		$4000 - $4017	$0018	NES APU and I / O registers
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
-		apu_->register_read(current_frame_elapsed(), addr, data);
-		ret = true;
+		ret = apu_ ? apu_->register_read(current_frame_elapsed(), addr, data) : false;
+		//ret = true;
 	}
-	assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
+	//assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
 	return ret;
 }
 
@@ -145,6 +146,7 @@ void NesBus::reset()
 	cart_->reset();
 	cpu_->reset();
 	ppu_->reset();
+	std::memset(onboard_ram_,0x00,0x0800);
 
 
 	total_cycles_ = 0;
@@ -180,6 +182,8 @@ bool NesBus::dma()
 bool NesBus::clock()
 {
 	//todo: check cpu ppu cart
+	if ((!ppu_)  || (!cpu_))
+		return false;
 	ppu_->clock();
 	if (total_cycles_ % 3 == 0)
 	{
@@ -198,7 +202,7 @@ bool NesBus::clock()
 
 	if(ppu_->is_frame_complete_ == true)
 	{
-		apu_->run_frame(current_frame_elapsed());
+		if(apu_)apu_->run_frame(current_frame_elapsed());
 		current_frame_cpu_cycles_ = 0;
 		ppu_->is_frame_complete_ = false;  //new frame
 		return true;

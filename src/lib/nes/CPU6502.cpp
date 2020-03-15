@@ -812,6 +812,7 @@ char* CPU6502::cpu_status()
 #include <cstring>
 #include <memory>
 #include "common/FileUtils.h"
+
 class BusTestNesCPU6502 : public Bus16Bits
 {
 public:
@@ -856,6 +857,7 @@ TEST_SUITE("nes.cpu")
 		std::shared_ptr<BusTestNesCPU6502> bus_test = std::make_shared<BusTestNesCPU6502>();
 		bus_test->connect_cpu(cpu6502);
 		CHECK(bus_test->load_test_program("../../../test_bin/6502_functional_test.bin"));
+		cpu6502->reset();
 		cpu6502->pc_ = 0x0400;
 		size_t run_cycle = 125982689;
 		size_t i = 0;
@@ -866,26 +868,5 @@ TEST_SUITE("nes.cpu")
 				break;
 		}
 		CHECK(i < run_cycle);	// hit 0x3469, successul
-
-	}
-
-	TEST_CASE("instructions.65C02_extended_opcodes_test")
-	{
-		std::shared_ptr<CPU6502> cpu6502 = std::make_shared<CPU6502>(true);
-		std::shared_ptr<BusTestNesCPU6502> bus_test = std::make_shared<BusTestNesCPU6502>();
-		bus_test->connect_cpu(cpu6502);
-		CHECK(bus_test->load_test_program("../../../test_bin/65C02_extended_opcodes_test.bin"));
-		cpu6502->pc_ = 0x0400;
-		size_t run_cycle = 1125982689;
-		size_t i = 0;
-		for (; i < run_cycle; i++)
-		{
-			cpu6502->clock();
-			//if (cpu6502->pc_ == 0x3469)
-			//	break;
-		}
-		std::cout << cpu6502->pc_ << std::endl;
-		//CHECK(i < run_cycle);	// hit 0x3469, successul
-
 	}
 }
