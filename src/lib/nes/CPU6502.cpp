@@ -8,58 +8,64 @@ CPU6502::CPU6502(bool decimal_mode_enabled):
 	bus_ptr_(NULL),
 	decimal_mode_enabled_(decimal_mode_enabled),
 	addr_table_{
-		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
-		 &a::abso,&a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
-		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
-		 &a::imp, &a::indx, &a::imp, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::acc, &a::imm, &a::ind, &a::abso,&a::abso, &a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
-		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpy, &a::zpy, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absy,&a::absy,
-		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpy, &a::zpy, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absy,&a::absy,
-		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx,
-		 &a::imm, &a::indx, &a::imm, &a::indx, &a::zp , &a::zp , &a::zp , &a::zp , &a::imp, &a::imm, &a::imp, &a::imm, &a::abso,&a::abso,&a::abso,&a::abso,
-		 &a::rel, &a::indy, &a::imp, &a::indy, &a::zpx, &a::zpx, &a::zpx, &a::zpx, &a::imp, &a::absy,&a::imp, &a::absy,&a::absx,&a::absx,&a::absx,&a::absx
-		 },
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
+		/*0*/&a::imp , &a::indx, &a::imp , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::acc , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*0*/
+		/*1*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx,/*1*/
+		/*2*/&a::abso, &a::indx, &a::imp , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::acc , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*2*/
+		/*3*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx,/*3*/
+		/*4*/&a::imp , &a::indx, &a::imp , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::acc , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*4*/
+		/*5*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx,/*5*/
+		/*6*/&a::imp , &a::indx, &a::imp , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::acc , &a::imm , &a::ind , &a::abso, &a::abso, &a::abso,/*6*/
+		/*7*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx,/*7*/
+		/*8*/&a::imm , &a::indx, &a::imm , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::imp , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*8*/
+		/*9*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpy , &a::zpy , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absy, &a::absy,/*9*/
+		/*A*/&a::imm , &a::indx, &a::imm , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::imp , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*A*/
+		/*B*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpy , &a::zpy , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absy, &a::absy,/*B*/
+		/*C*/&a::imm , &a::indx, &a::imm , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::imp , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*C*/
+		/*D*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx,/*D*/
+		/*E*/&a::imm , &a::indx, &a::imm , &a::indx, &a::zp  , &a::zp  , &a::zp  , &a::zp  , &a::imp , &a::imm , &a::imp , &a::imm , &a::abso, &a::abso, &a::abso, &a::abso,/*E*/
+		/*F*/&a::rel , &a::indy, &a::imp , &a::indy, &a::zpx , &a::zpx , &a::zpx , &a::zpx , &a::imp , &a::absy, &a::imp , &a::absy, &a::absx, &a::absx, &a::absx, &a::absx /*F*/
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
+		},
 	op_table_{
-		&a::brk, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::php, &a::ora, &a::asl, &a::nop, &a::nop, &a::ora, &a::asl, &a::slo,
-		&a::bpl, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo, &a::clc, &a::ora, &a::nop, &a::slo, &a::nop, &a::ora, &a::asl, &a::slo,
-		&a::jsr, &a::and_, &a::nop, &a::rla, &a::bit, &a::and_, &a::rol, &a::rla, &a::plp, &a::and_, &a::rol, &a::nop, &a::bit, &a::and_, &a::rol, &a::rla,
-		&a::bmi, &a::and_, &a::nop, &a::rla, &a::nop, &a::and_, &a::rol, &a::rla, &a::sec, &a::and_, &a::nop, &a::rla, &a::nop, &a::and_, &a::rol, &a::rla,
-		&a::rti, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre, &a::pha, &a::eor, &a::lsr, &a::nop, &a::jmp, &a::eor, &a::lsr, &a::sre,
-		&a::bvc, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre, &a::cli, &a::eor, &a::nop, &a::sre, &a::nop, &a::eor, &a::lsr, &a::sre,
-		&a::rts, &a::adc, &a::nop, &a::rra, &a::nop, &a::adc, &a::ror, &a::rra, &a::pla, &a::adc, &a::ror, &a::nop, &a::jmp, &a::adc, &a::ror, &a::rra,
-		&a::bvs, &a::adc, &a::nop, &a::rra, &a::nop, &a::adc, &a::ror, &a::rra, &a::sei, &a::adc, &a::nop, &a::rra, &a::nop, &a::adc, &a::ror, &a::rra,
-		&a::nop, &a::sta, &a::nop, &a::sax, &a::sty, &a::sta, &a::stx, &a::sax, &a::dey, &a::nop, &a::txa, &a::nop, &a::sty, &a::sta, &a::stx, &a::sax,
-		&a::bcc, &a::sta, &a::nop, &a::nop, &a::sty, &a::sta, &a::stx, &a::sax, &a::tya, &a::sta, &a::txs, &a::nop, &a::nop, &a::sta, &a::nop, &a::nop,
-		&a::ldy, &a::lda, &a::ldx, &a::lax, &a::ldy, &a::lda, &a::ldx, &a::lax, &a::tay, &a::lda, &a::tax, &a::nop, &a::ldy, &a::lda, &a::ldx, &a::lax,
-		&a::bcs, &a::lda, &a::nop, &a::lax, &a::ldy, &a::lda, &a::ldx, &a::lax, &a::clv, &a::lda, &a::tsx, &a::lax, &a::ldy, &a::lda, &a::ldx, &a::lax,
-		&a::cpy, &a::cmp, &a::nop, &a::dcp, &a::cpy, &a::cmp, &a::dec, &a::dcp, &a::iny, &a::cmp, &a::dex, &a::nop, &a::cpy, &a::cmp, &a::dec, &a::dcp,
-		&a::bne, &a::cmp, &a::nop, &a::dcp, &a::nop, &a::cmp, &a::dec, &a::dcp, &a::cld, &a::cmp, &a::nop, &a::dcp, &a::nop, &a::cmp, &a::dec, &a::dcp,
-		&a::cpx, &a::sbc, &a::nop, &a::isb, &a::cpx, &a::sbc, &a::inc, &a::isb, &a::inx, &a::sbc, &a::nop, &a::sbc, &a::cpx, &a::sbc, &a::inc, &a::isb,
-		&a::beq, &a::sbc, &a::nop, &a::isb, &a::nop, &a::sbc, &a::inc, &a::isb, &a::sed, &a::sbc, &a::nop, &a::isb, &a::nop, &a::sbc, &a::inc, &a::isb 
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
+		/*0*/&a::brk , &a::ora , &a::nop , &a::slo , &a::nop , &a::ora , &a::asl , &a::slo , &a::php , &a::ora , &a::asl , &a::nop , &a::nop , &a::ora , &a::asl , &a::slo ,/*0*/
+		/*1*/&a::bpl , &a::ora , &a::nop , &a::slo , &a::nop , &a::ora , &a::asl , &a::slo , &a::clc , &a::ora , &a::nop , &a::slo , &a::nop , &a::ora , &a::asl , &a::slo ,/*1*/
+		/*2*/&a::jsr , &a::and_, &a::nop , &a::rla , &a::bit , &a::and_, &a::rol , &a::rla , &a::plp , &a::and_, &a::rol , &a::nop , &a::bit , &a::and_, &a::rol , &a::rla ,/*2*/
+		/*3*/&a::bmi , &a::and_, &a::nop , &a::rla , &a::nop , &a::and_, &a::rol , &a::rla , &a::sec , &a::and_, &a::nop , &a::rla , &a::nop , &a::and_, &a::rol , &a::rla ,/*3*/
+		/*4*/&a::rti , &a::eor , &a::nop , &a::sre , &a::nop , &a::eor , &a::lsr , &a::sre , &a::pha , &a::eor , &a::lsr , &a::nop , &a::jmp , &a::eor , &a::lsr , &a::sre ,/*4*/
+		/*5*/&a::bvc , &a::eor , &a::nop , &a::sre , &a::nop , &a::eor , &a::lsr , &a::sre , &a::cli , &a::eor , &a::nop , &a::sre , &a::nop , &a::eor , &a::lsr , &a::sre ,/*5*/
+		/*6*/&a::rts , &a::adc , &a::nop , &a::rra , &a::nop , &a::adc , &a::ror , &a::rra , &a::pla , &a::adc , &a::ror , &a::nop , &a::jmp , &a::adc , &a::ror , &a::rra ,/*6*/
+		/*7*/&a::bvs , &a::adc , &a::nop , &a::rra , &a::nop , &a::adc , &a::ror , &a::rra , &a::sei , &a::adc , &a::nop , &a::rra , &a::nop , &a::adc , &a::ror , &a::rra ,/*7*/
+		/*8*/&a::nop , &a::sta , &a::nop , &a::sax , &a::sty , &a::sta , &a::stx , &a::sax , &a::dey , &a::nop , &a::txa , &a::nop , &a::sty , &a::sta , &a::stx , &a::sax ,/*8*/
+		/*9*/&a::bcc , &a::sta , &a::nop , &a::nop , &a::sty , &a::sta , &a::stx , &a::sax , &a::tya,  &a::sta , &a::txs , &a::nop , &a::nop , &a::sta , &a::nop , &a::nop ,/*9*/
+		/*A*/&a::ldy , &a::lda , &a::ldx , &a::lax , &a::ldy , &a::lda , &a::ldx , &a::lax , &a::tay , &a::lda , &a::tax , &a::nop , &a::ldy , &a::lda , &a::ldx , &a::lax ,/*A*/
+		/*B*/&a::bcs , &a::lda , &a::nop , &a::lax , &a::ldy , &a::lda , &a::ldx , &a::lax , &a::clv , &a::lda , &a::tsx , &a::lax , &a::ldy , &a::lda , &a::ldx , &a::lax ,/*B*/
+		/*C*/&a::cpy , &a::cmp , &a::nop , &a::dcp , &a::cpy , &a::cmp , &a::dec , &a::dcp , &a::iny , &a::cmp , &a::dex , &a::nop , &a::cpy , &a::cmp , &a::dec , &a::dcp ,/*C*/
+		/*D*/&a::bne , &a::cmp , &a::nop , &a::dcp , &a::nop , &a::cmp , &a::dec , &a::dcp , &a::cld , &a::cmp , &a::nop , &a::dcp , &a::nop , &a::cmp , &a::dec , &a::dcp ,/*D*/
+		/*E*/&a::cpx , &a::sbc , &a::nop , &a::isb , &a::cpx , &a::sbc , &a::inc , &a::isb , &a::inx , &a::sbc , &a::nop , &a::sbc , &a::cpx , &a::sbc , &a::inc , &a::isb ,/*E*/
+		/*F*/&a::beq , &a::sbc , &a::nop , &a::isb , &a::nop , &a::sbc , &a::inc , &a::isb , &a::sed , &a::sbc , &a::nop , &a::isb , &a::nop , &a::sbc , &a::inc , &a::isb  /*F*/
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
 	},
 	cycle_table_{
-		7,    6,    2,    8,    3,    3,    5,    5,    3,    2,    2,    2,    4,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
-		6,    6,    2,    8,    3,    3,    5,    5,    4,    2,    2,    2,    4,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
-		6,    6,    2,    8,    3,    3,    5,    5,    3,    2,    2,    2,    3,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
-		6,    6,    2,    8,    3,    3,    5,    5,    4,    2,    2,    2,    5,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
-		2,    6,    2,    6,    3,    3,    3,    3,    2,    2,    2,    2,    4,    4,    4,    4, 
-		2,    6,    2,    6,    4,    4,    4,    4,    2,    5,    2,    5,    5,    5,    5,    5, 
-		2,    6,    2,    6,    3,    3,    3,    3,    2,    2,    2,    2,    4,    4,    4,    4, 
-		2,    5,    2,    5,    4,    4,    4,    4,    2,    4,    2,    4,    4,    4,    4,    4, 
-		2,    6,    2,    8,    3,    3,    5,    5,    2,    2,    2,    2,    4,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7, 
-		2,    6,    2,    8,    3,    3,    5,    5,    2,    2,    2,    2,    4,    4,    6,    6, 
-		2,    5,    2,    8,    4,    4,    6,    6,    2,    4,    2,    7,    4,    4,    7,    7  
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
+		/*0*/7 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       3 ,       2 ,       2 ,       2 ,       4 ,       4 ,       6 ,       6       ,/*0*/
+		/*1*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7       ,/*1*/
+		/*2*/6 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       4 ,       2 ,       2 ,       2 ,       4 ,       4 ,       6 ,       6       ,/*2*/
+		/*3*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7       ,/*3*/
+		/*4*/6 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       3 ,       2 ,       2 ,       2 ,       3 ,       4 ,       6 ,       6       ,/*4*/
+		/*5*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7       ,/*5*/
+		/*6*/6 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       4 ,       2 ,       2 ,       2 ,       5 ,       4 ,       6 ,       6       ,/*6*/
+		/*7*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7       ,/*7*/
+		/*8*/2 ,       6 ,       2 ,       6 ,       3 ,       3 ,       3 ,       3 ,       2 ,       2 ,       2 ,       2 ,       4 ,       4 ,       4 ,       4       ,/*8*/
+		/*9*/2 ,       6 ,       2 ,       6 ,       4 ,       4 ,       4 ,       4 ,       2 ,       5 ,       2 ,       5 ,       5 ,       5 ,       5 ,       5       ,/*9*/
+		/*A*/2 ,       6 ,       2 ,       6 ,       3 ,       3 ,       3 ,       3 ,       2 ,       2 ,       2 ,       2 ,       4 ,       4 ,       4 ,       4       ,/*A*/
+		/*B*/2 ,       5 ,       2 ,       5 ,       4 ,       4 ,       4 ,       4 ,       2 ,       4 ,       2 ,       4 ,       4 ,       4 ,       4 ,       4       ,/*B*/
+		/*C*/2 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       2 ,       2 ,       2 ,       2 ,       4 ,       4 ,       6 ,       6       ,/*C*/
+		/*D*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7       ,/*D*/
+		/*E*/2 ,       6 ,       2 ,       8 ,       3 ,       3 ,       5 ,       5 ,       2 ,       2 ,       2 ,       2 ,       4 ,       4 ,       6 ,       6       ,/*E*/
+		/*F*/2 ,       5 ,       2 ,       8 ,       4 ,       4 ,       6 ,       6 ,       2 ,       4 ,       2 ,       7 ,       4 ,       4 ,       7 ,       7  		/*F*/
+			/*0         1         2         3         4         5         6         7         8         9         A         B         C         D         E         F   */
 	}
 {
 }
