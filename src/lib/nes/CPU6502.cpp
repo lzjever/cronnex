@@ -1,6 +1,7 @@
 #include <common/Assert.h>
 #include "CPU6502.h"
 #include "Bus16Bits.h"
+#include "CPU6502Disassembler.h"
 
 
 CPU6502::CPU6502(bool decimal_mode_enabled):
@@ -114,12 +115,21 @@ void CPU6502::test_overflow(const uint16_t& a, const uint16_t& fetched, const ui
 		status_ &= ~flag_overflow;
 }
 
+
+
+bool CPU6502::set_disassembler( CPU6502Disassembler* disassembler)
+{
+	disassembler_ = disassembler;
+	return (bool)disassembler;
+}
+
 void CPU6502::clock()
 {
 	assert(bus_ptr_);
 	if (0 == cycles_left_on_ins_)
 	{
-		opcode_ = bus_read8(pc_++);
+		pc_current_opcode_ = pc_++;
+		opcode_ = bus_read8(pc_current_opcode_);
 		status_ |= flag_constant;
 		penalty_op_ = penalty_addr_ = 0;
 		(this->*addr_table_[opcode_])();

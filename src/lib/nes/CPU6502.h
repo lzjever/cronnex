@@ -4,6 +4,7 @@
 //#define EMULATE_UNOFFICIAL_OP 1
 
 class Bus16Bits;
+class CPU6502Disassembler;
 class CPU6502
 {
 public:
@@ -15,6 +16,8 @@ public:
 	void irq();
 	void nmi();
 	char* cpu_status();
+
+	bool set_disassembler( CPU6502Disassembler* disassembler);
 
 	//cpu registers
 	//flag for status : CZIDBUVN
@@ -29,6 +32,7 @@ public:
 		flag_overflow = 0x40,
 		flag_sign = 0x80,
 	};
+
 private:
 	//status
 	void test_zero(const uint16_t& result);
@@ -37,7 +41,6 @@ private:
 	void test_overflow(const uint16_t& old_a, const uint16_t& m, const uint16_t& result);
 
 
-private:
 	//addressing 
 	void acc();		void imp();		void imm();
 	void zp();		void zpx();		void zpy();
@@ -45,10 +48,8 @@ private:
 	void rel();		void indx();	void indy();
 	void ind();
 	
-
-private:
 	//operations
-	void adc();	void and_();	void asl();	void bcc();
+	void adc();	void and_();void asl();	void bcc();
 	void bcs();	void beq();	void bit();	void bmi();
 	void bne();	void bpl();	void brk();	void bvc();
 	void bvs();	void clc();	void cld();	void cli();
@@ -65,7 +66,6 @@ private:
 	void slo();	void rla();	void sre();	void rra();
 	void sax();	void lax();	void dcp();	void isb();
 
-private:
 	//user op helpers
 	//stack ops
 	void push8(uint8_t val);
@@ -79,7 +79,6 @@ private:
 	uint8_t bus_read8(uint16_t addr);
 	uint16_t bus_read16(uint16_t addr);
 
-private:
 
 	inline void set_sign(bool x) { 
 		x ? (status_ |= flag_sign) : (status_ &= (~flag_sign)); 
@@ -106,12 +105,12 @@ private:
 		x ? (status_ |= flag_carry) : (status_ &= (~flag_carry));
 	}
 
-
 public:
 	//config
 	uint16_t stack_base_addr_;
 
 	uint16_t	pc_;	//program counter
+	uint16_t	pc_current_opcode_;	//program counter on current opcode.
 	uint8_t		sp_, a_, x_, y_, status_;
 
 	//durations
@@ -128,7 +127,6 @@ public:
 	Bus16Bits* bus_ptr_;
 	bool decimal_mode_enabled_;
 
-private:
 	typedef void(CPU6502::* addr_ptr)(void);
 	typedef void(CPU6502::* op_ptr)(void);
 	addr_ptr	addr_table_[256];
@@ -136,6 +134,8 @@ private:
 	uint32_t	cycle_table_[256];
 
 	char	cpu_status_buffer_[512];
+
+	CPU6502Disassembler* disassembler_;
 
 };
 
