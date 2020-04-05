@@ -7,5 +7,5 @@
 uint16_t CPU6502Disassembler::Disassemble_current_instruction(CPU6502* cpu)
 {
 	assert(cpu);
-	
+	return 0;
 }

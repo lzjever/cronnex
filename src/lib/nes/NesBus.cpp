@@ -58,8 +58,6 @@ bool NesBus::write(uint16_t addr, uint8_t data)
 		*/
 		ret = apu_ ? apu_->register_write(current_frame_elapsed(), addr, data) : false;
 	}
-
-	//assert_ex(ret, std::cerr << "write addr = "<< addr << std::endl);
 	return ret;
 }
 
@@ -93,9 +91,7 @@ bool NesBus::read(uint16_t addr, uint8_t &data, bool read_only)
 		$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
 		*/
 		ret = apu_ ? apu_->register_read(current_frame_elapsed(), addr, data) : false;
-		//ret = true;
 	}
-	//assert_ex(ret, std::cerr << "addr = "<< addr << std::endl);
 	return ret;
 }
 
@@ -182,7 +178,6 @@ bool NesBus::dma()
 
 bool NesBus::clock()
 {
-	//todo: check cpu ppu cart
 	if ((!ppu_)  || (!cpu_))
 		return false;
 	ppu_->clock();

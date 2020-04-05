@@ -31,16 +31,13 @@ bool Mapper::nt_addr(uint16_t addr, uint16_t& mapped_addr)
 		return false;
 	switch (mirror_type_)
 	{
-	case Mapper::MIRROR::flag_vertical:    
-		//return addr % 0x800;
+	case Mapper::MIRROR::flag_vertical:
 		mapped_addr = addr % 0x800 + 0x2000;
 		break;
-	case Mapper::MIRROR::flag_horizontal:  
-		//return ((addr / 2) & 0x400) + (addr % 0x400);
+	case Mapper::MIRROR::flag_horizontal:
 		mapped_addr = ((addr / 2) & 0x400) + (addr % 0x400) + 0x2000;
 		break;
 	default:
-		//return addr - 0x2000;
 		return false;
 	}
 	return true;
