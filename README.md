@@ -15,10 +15,6 @@ Supporting NES games is a WIP.
 Developing the GUI is a WIP.
 
 
-## Release plan
-The first playable version will be released in mid-April 2020.
-
-
 ## References and credits
 - [OneLoneCoder](https://github.com/OneLoneCoder)'s fantastic NES emulator example: https://github.com/OneLoneCoder/olcNES 
 - blargg's APU implementation NesSndEmu: http://blargg.8bitalley.com/libs/audio.html#Nes_Snd_Emu
