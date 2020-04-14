@@ -8,3 +8,6 @@
 [submodule "src/external/filesystem"]
 	path = src/external/filesystem
 	url = https://github.com/gulrak/filesystem.git
+[submodule "test_bin/nes-test-roms"]
+	path = test_bin/nes-test-roms
+	url = https://github.com/christopherpow/nes-test-roms.git
